@@ -2,6 +2,8 @@
 
 Ordem inicial por risco e valor. Reordenar com o Product Owner.
 
+Roadmap aprovado para conclusão da plataforma: `docs/ROADMAP_SPRINTS_8_15.md`. Até a Sprint 15, identidade, dados, jornadas essenciais, IA durável, migração e operação de produção têm precedência sobre MCP e novas funcionalidades.
+
 ## P0 — Prontidão para piloto
 
 ### PB-001 Validar provedores reais — 5 pontos
@@ -30,7 +32,7 @@ Critérios: migração sem perda de contas; bootstrap de uso único; master com 
 
 Dependências: definição de provedor de e-mail para recuperação externa; HTTPS estável para evolução WebAuthn; armazenamento compartilhado antes de escalar horizontalmente.
 
-Status: selecionado como nova prioridade de segurança antes do piloto externo. Arquitetura e critérios aprovados; implementação iniciará por PB-016 sem interromper os usuários atuais.
+Status: fundação PostgreSQL/RLS e CI concluídos na Sprint 7. Continuação priorizada nas Sprints 8–15, começando por staging e testes RLS por persona.
 
 ### PB-003 Decidir ano escolar do aluno — 3 pontos
 

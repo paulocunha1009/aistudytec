@@ -32,11 +32,11 @@ Entregue no repositório:
 | Identidade canônica no Auth | atendido em código | FK `profiles.id → auth.users.id` |
 | RLS por padrão | atendido em código | RLS em todas as tabelas públicas |
 | Gabarito não disponível ao estudante | atendido em desenho | tabela separada, sem policy estudantil |
-| Recriação local real | bloqueado pelo ambiente | Docker não está instalado nesta máquina |
+| Recriação em ambiente limpo | atendido | GitHub Actions recriou PostgreSQL, aplicou migrations, executou pgTAP e lint |
 | Regressão do sistema atual | atendido | 50 testes backend, 15 frontend e build aprovados |
 | Testes RLS por persona | próximo incremento | sessões JWT de teste e casos negativos |
 
-O schema ainda não é declarado validado em PostgreSQL: falta executar `supabase db reset` e `supabase test db` em ambiente com Docker. Essa verificação é gate, não opcional.
+O schema foi validado em PostgreSQL pelo GitHub Actions no run `29953761085`. A aplicação e o job de migrations/RLS concluíram com sucesso. Testes negativos completos por persona continuam selecionados para a Sprint 8.
 
 ## Próximo incremento
 

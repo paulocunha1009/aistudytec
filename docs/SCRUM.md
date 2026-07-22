@@ -17,6 +17,16 @@ Uma pessoa pode acumular papéis no protótipo, mantendo responsabilidades clara
 - Sprint 5: validação real dos provedores e experiência de aprendizagem imersiva.
 - Sprint 6: confiabilidade operacional e jobs idempotentes, com migração incremental em andamento.
 - Sprint 7: credenciais e identidade; fundação, sessões revogáveis, recuperação, MFA e operação master segura em incrementos verticais.
+- Sprint 8: Supabase staging e RLS por persona.
+- Sprint 9: Supabase Auth, recuperação, sessões e MFA master.
+- Sprint 10: jornada docente no PostgreSQL definitivo.
+- Sprint 11: jornada do estudante, quiz e progresso no PostgreSQL.
+- Sprint 12: IA assíncrona, Edge Functions e filas duráveis.
+- Sprint 13: migração de dados e corte do Flask/SQLite de produção.
+- Sprint 14: migração CRA→Vite e Vercel staging.
+- Sprint 15: E2E, operação, LGPD e liberação do piloto.
+
+O detalhamento priorizado das Sprints 8–15 está em `docs/ROADMAP_SPRINTS_8_15.md`.
 
 O padrão aprovado para próximos incrementos é vertical: experiência rica, regra explícita, persistência, integração real, testes, documentação e evidência visual no mesmo ciclo.
 

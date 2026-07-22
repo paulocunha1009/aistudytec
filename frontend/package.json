@@ -2,14 +2,16 @@
   "name": "aistudytec-frontend",
   "version": "1.0.0",
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.8",
+    "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "lucide-react": "^0.263.1"
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "test": "react-scripts test --watchAll=false"
   },
   "browserslist": {
     "production": [
@@ -22,5 +24,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   }
 }

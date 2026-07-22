@@ -1,0 +1,4 @@
+interface:
+  display_name: "AISTUDYTEC Engineering"
+  short_description: "Evolução segura e pedagógica do AISTUDYTEC"
+  default_prompt: "Use $aistudytec-engineering para planejar e implementar a próxima melhoria do AISTUDYTEC."

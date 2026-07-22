@@ -1,0 +1,3 @@
+-- Intencionalmente vazio.
+-- Usuários, inclusive master, são criados por fluxo administrativo do Supabase Auth.
+-- Nunca adicionar senhas, tokens, chaves ou identidades reais neste arquivo.

@@ -1,7 +1,7 @@
-fastapi
-uvicorn
-sqlalchemy
-pydantic
 flask
 flask-cors
 werkzeug
+python-dotenv
+requests
+pytest
+Flask-Limiter

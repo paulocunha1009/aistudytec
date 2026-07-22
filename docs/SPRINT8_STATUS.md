@@ -21,6 +21,10 @@ Credenciais de banco, chaves `service_role`, Gemini e YouTube não são registra
 
 O commit `7c95cd5` disparou a integração e aplicou `supabase/migrations/20260722000100_initial_production_schema.sql` sem edição manual. O painel confirmou a versão `20260722000100` no histórico e as 15 tabelas públicas esperadas.
 
+## RLS verificado por persona
+
+O commit `ab5ea8c` adicionou 25 asserções pgTAP para anônimo, estudante matriculado, professor proprietário, outro professor, master `aal1` e master `aal2`. Os cenários cobrem perfis, turmas, temas publicados e rascunhos, gabaritos, jobs e auditoria. O GitHub Actions run `29956672187` concluiu os jobs de aplicação e PostgreSQL/migrations/RLS com sucesso.
+
 ## Próximo gate
 
-A Sprint 8 somente será encerrada após testes positivos e negativos de RLS para todas as personas, verificação de não exposição de dados sensíveis e ensaio documentado de backup e restauração.
+A Sprint 8 somente será encerrada após o ensaio documentado de backup e restauração do staging.

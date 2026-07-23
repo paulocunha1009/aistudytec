@@ -17,7 +17,7 @@ const TeacherPanel = ({ apiUrl, currentUser, addToast }) => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <h1 className="text-2xl font-black text-slate-800">Gestão</h1>
-      <ClassManagement apiUrl={apiUrl} currentUser={currentUser} selectedClassId={classId}
+      <ClassManagement currentUser={currentUser} selectedClassId={classId}
         onSelectClass={id => { setClassId(id); setTopicId(null); }} addToast={addToast} />
 
       {classId && !topicId && (

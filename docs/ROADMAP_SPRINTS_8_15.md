@@ -62,6 +62,8 @@ Dependências: Sprint 8; domínio/remetente de e-mail de staging.
 
 ## Sprint 10 — Jornada docente em PostgreSQL — P0 — 21 pontos
 
+Status: em andamento desde 23 de julho de 2026. Turmas PostgreSQL, catálogo curricular estruturado e blueprint com múltiplos componentes/descritores foram entregues e homologados. Evidências em `docs/SPRINT10_STATUS.md`.
+
 Objetivo: como professor, quero administrar turmas e conteúdos no banco definitivo sem depender de SQLite.
 
 Escopo:

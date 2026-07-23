@@ -35,6 +35,8 @@ Dependências: acesso ao Supabase e criação do projeto de staging.
 
 ## Sprint 9 — Identidade completa e master com MFA — P0 — 18 pontos
 
+Status: em andamento. Auth/PKCE, recuperação, logout, gate `aal2` e identidade master nominal em staging foram entregues; ativação do convite, TOTP real, convite administrativo definitivo e testes integrados permanecem abertos.
+
 Objetivo: como usuário, quero autenticação, recuperação e sessões seguras; como master, quero MFA obrigatório e administração auditada.
 
 Escopo:
@@ -43,7 +45,7 @@ Escopo:
 - login por e-mail, logout local/global, sessão renovada e estados de erro;
 - convite controlado de professor e estudante;
 - confirmação e recuperação de senha por e-mail real em staging;
-- matrícula TOTP, desafio `aal2` e códigos de recuperação;
+- matrícula TOTP, desafio `aal2`, segundo fator de recuperação e procedimento administrativo auditado;
 - criar master nominal fora de seed/migration;
 - telas de conta, sessão e segurança acessíveis;
 - auditoria de convite, alteração de papel/estado e ações master.

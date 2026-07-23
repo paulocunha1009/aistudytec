@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Youtube, CheckCircle2, RefreshCw, Send, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Youtube, CheckCircle2, RefreshCw, Send, Trash2, Loader2, AlertCircle, ExternalLink } from 'lucide-react';
 import { Badge, Button, Card, ConfirmDialog, ErrorState, Skeleton } from '../../design-system';
 import {
   deleteTopicQuestion,
+  buildTopicGate,
   generateTopicContent,
   getTopicReview,
   publishTopic,
@@ -58,8 +59,8 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
     try { await deleteTopicQuestion(qid); setConfirmation(null); addToast('Questão excluída', 'success'); load(); } catch (e) { addToast(e.message, 'error'); } finally { setBusy(false); }
   };
 
-  const approveVideo = async (vid) => {
-    try { await setVideoApproval({ videoId: vid, approved: true }); load(); } catch (e) { addToast(e.message, 'error'); }
+  const approveVideo = async (video) => {
+    try { await setVideoApproval({ videoId: video.id, approved: !video.approved }); load(); } catch (e) { addToast(e.message, 'error'); }
   };
 
   const regenerate = async (part) => {
@@ -90,6 +91,8 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
   if (loadState === 'loading') return <Skeleton lines={6} label="Carregando revisão do tópico" />;
   if (loadState === 'error') return <ErrorState title="Não foi possível carregar a revisão" onRetry={load} />;
   if (!topic) return null;
+  const gate = buildTopicGate(topic);
+  const gateReady = gate.every(item => item.ready);
 
   return (
     <div className="space-y-8">
@@ -114,6 +117,27 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
       </div>
 
       <h2 className="text-2xl font-bold">{topic.title}</h2>
+
+      <Card as="section" className={gateReady ? 'border-emerald-200 bg-emerald-50/50' : 'border-amber-200 bg-amber-50/40'}>
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+          <div><p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Gate de publicação</p><h3 className="mt-1 text-xl font-black text-slate-900">{gateReady ? 'Material pronto para decisão docente' : 'Curadoria ainda necessária'}</h3></div>
+          <Badge tone={gateReady ? 'success' : 'warning'}>{gate.filter(item => item.ready).length}/{gate.length} critérios</Badge>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {gate.map(item => <div key={item.key} className="flex items-start gap-3 rounded-xl bg-white p-3 shadow-sm">
+            {item.ready ? <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={19} /> : <AlertCircle className="mt-0.5 shrink-0 text-amber-600" size={19} />}
+            <span className="text-sm font-semibold text-slate-700">{item.label}</span>
+          </div>)}
+        </div>
+      </Card>
+
+      <Card as="section">
+        <div className="mb-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Transparência acadêmica</p><h3 className="mt-1 text-xl font-black text-slate-900">Fontes consultadas pela pesquisa fundamentada</h3><p className="mt-1 text-sm text-slate-500">Abra e confira as fontes antes de aprovar o material.</p></div>
+        {topic.sources.length ? <div className="grid gap-3 sm:grid-cols-2">{topic.sources.map(source =>
+          <a key={source.id} href={source.url} target="_blank" rel="noreferrer" className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 p-4 hover:border-blue-300 hover:bg-blue-50/40">
+            <div className="min-w-0"><p className="line-clamp-2 font-bold text-slate-900">{source.title}</p><p className="mt-1 text-xs text-slate-500">{source.domain}</p></div><ExternalLink size={17} className="shrink-0 text-blue-600" />
+          </a>)}</div> : <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Nenhuma fonte fundamentada foi registrada para esta versão.</p>}
+      </Card>
 
       <Card as="section">
         <div className="flex justify-between items-center mb-4">
@@ -182,7 +206,7 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
               <p className="text-xs font-bold text-slate-400 uppercase mb-2">{l.label}</p>
               <div className="space-y-2">
                 {(topic.videos?.[l.key] || []).map(v => (
-                  <button key={v.id} onClick={() => approveVideo(v.id)} className={`w-full text-left p-2 border rounded-lg flex items-center gap-2 ${v.approved ? 'border-green-500 bg-green-50' : ''}`}>
+                  <button key={v.id} onClick={() => approveVideo(v)} className={`w-full text-left p-2 border rounded-lg flex items-center gap-2 ${v.approved ? 'border-green-500 bg-green-50' : ''}`}>
                     <Youtube className="text-red-500 shrink-0" size={18} />
                     <span className="text-xs line-clamp-2 flex-1">{v.title}</span>
                     {v.approved && <CheckCircle2 className="text-green-500 shrink-0" size={16} />}

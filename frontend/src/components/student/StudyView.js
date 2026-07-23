@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight, BookOpen, CheckCircle2, Circle, Compass, Eye, FlaskConical,
-  Info, Lightbulb, MessageCircle, PenLine, Play, RotateCcw, Search, Target, Youtube,
+  ExternalLink, Info, Lightbulb, MessageCircle, PenLine, Play, RotateCcw, Search, Target, Youtube,
 } from 'lucide-react';
 import { Badge, Button, Card, EmptyState, Progress } from '../../design-system';
 
@@ -153,6 +153,16 @@ const StudyView = ({ topic, onStartQuiz, onBack }) => {
                 <Progress value={progress} className="my-5" />
                 <div className="grid gap-2 sm:grid-cols-2">{tasks.map(task => <button key={task.key} onClick={() => toggleTask(task.key)} className="flex items-start gap-2 rounded-xl bg-white/5 p-3 text-left text-sm hover:bg-white/10">{levelCompleted[task.key] ? <CheckCircle2 className="shrink-0 text-lime-300" size={19} /> : <Circle className="shrink-0 text-slate-500" size={19} />}<span>{task.label}</span></button>)}</div>
               </section>
+
+              {topic.sources?.length > 0 && <section className="rounded-2xl border border-slate-200 p-5 sm:p-7">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">Confira as evidências</p>
+                <h3 className="mt-1 text-xl font-black text-slate-900">Fontes usadas neste material</h3>
+                <p className="mt-1 text-sm text-slate-500">Leia mais de uma fonte, compare abordagens e registre o que sustenta sua conclusão.</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">{topic.sources.map(source =>
+                  <a key={source.id || source.url} href={source.url} target="_blank" rel="noreferrer" className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 p-4 hover:border-blue-300 hover:bg-blue-50/50">
+                    <div className="min-w-0"><p className="line-clamp-2 font-bold text-slate-900">{source.title}</p><p className="mt-1 text-xs text-slate-500">{source.domain}</p></div><ExternalLink size={17} className="shrink-0 text-blue-600" />
+                  </a>)}</div>
+              </section>}
             </div>
           )}
 

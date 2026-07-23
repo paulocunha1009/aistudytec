@@ -5,6 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 const levels = ['simple', 'technical', 'advanced'];
+const trustedSource = (domain: string) => /(^|\.)(gov\.br|edu\.br|usp\.br|unicamp\.br|ufsc\.br|ufrj\.br|ufmg\.br|rnp\.br|fiocruz\.br|ibm\.com|microsoft\.com|mozilla\.org|w3\.org|ieee\.org|acm\.org|nature\.com|science\.org|reuters\.com|bbc\.com|bbc\.co\.uk|apnews\.com|nytimes\.com|theguardian\.com|folha\.uol\.com\.br|estadao\.com\.br|oglobo\.globo\.com)$/.test(domain);
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -26,32 +27,51 @@ const parseDuration = (value: string) => {
   return Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0);
 };
 
+const tokens = (value: string) => new Set(
+  value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
+    .match(/[a-z0-9]+/g)
+    ?.filter(token => token.length > 2 && !['para', 'como', 'uma', 'das', 'dos', 'que', 'curso', 'aula'].includes(token)) || [],
+);
+
 const youtubeVideos = async (apiKey: string | undefined, title: string) => {
   if (!apiKey) return [];
   const output: Record<string, unknown>[] = [];
+  const usedVideoIds = new Set<string>();
+  const topicTokens = tokens(title);
   for (const level of levels) {
     const query = encodeURIComponent(`${title} ${level === 'simple' ? 'explicação simples' : level === 'technical' ? 'aula completa' : 'aprofundado'} ensino médio`);
     const search = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&part=snippet&type=video&safeSearch=strict&relevanceLanguage=pt&maxResults=8&q=${query}`).then(r => r.json());
     const ids = (search.items || []).map((item: any) => item.id?.videoId).filter(Boolean);
     if (!ids.length) continue;
     const details = await fetch(`https://www.googleapis.com/youtube/v3/videos?key=${apiKey}&part=snippet,contentDetails,statistics&id=${ids.join(',')}`).then(r => r.json());
-    let orderIndex = 0;
+    const ranked = [];
     for (const item of details.items || []) {
       const duration = parseDuration(item.contentDetails?.duration);
       if (duration < 180 || duration > 1200) continue;
-      output.push({
+      if (usedVideoIds.has(item.id)) continue;
+      const titleTokens = tokens(item.snippet.title);
+      const overlap = [...topicTokens].filter(token => titleTokens.has(token)).length;
+      if (overlap === 0) continue;
+      const views = Number(item.statistics?.viewCount || 0);
+      const searchPosition = Math.max(0, ids.indexOf(item.id));
+      const rankScore = overlap * 1000 + Math.log10(views + 1) * 45
+        - Math.abs(duration - 600) / 20 - searchPosition * 15;
+      ranked.push({
         level,
         youtubeVideoId: item.id,
         title: item.snippet.title,
         channelTitle: item.snippet.channelTitle,
         durationSeconds: duration,
-        viewCount: Number(item.statistics?.viewCount || 0),
+        viewCount: views,
         thumbnailUrl: item.snippet.thumbnails?.medium?.url,
-        rankScore: Number(item.statistics?.viewCount || 0),
-        orderIndex: orderIndex++,
+        rankScore,
       });
-      if (orderIndex === 3) break;
     }
+    ranked.sort((left, right) => right.rankScore - left.rankScore);
+    ranked.slice(0, 3).forEach((video, orderIndex) => {
+      usedVideoIds.add(video.youtubeVideoId);
+      output.push({ ...video, orderIndex });
+    });
   }
   return output;
 };
@@ -104,8 +124,14 @@ Deno.serve(async req => {
     const chunks = candidate?.groundingMetadata?.groundingChunks || [];
     const sources = chunks.map((chunk: any) => chunk.web).filter(Boolean).map((web: any) => {
       const parsed = new URL(web.uri);
-      return { title: web.title || parsed.hostname, url: web.uri, domain: parsed.hostname };
-    }).filter((item: any, index: number, list: any[]) => list.findIndex(other => other.url === item.url) === index);
+      const title = web.title || parsed.hostname;
+      const domain = String(title).trim().toLowerCase().replace(/^www\./, '');
+      return { title, url: web.uri, domain };
+    }).filter((item: any) => trustedSource(item.domain))
+      .filter((item: any, index: number, list: any[]) => list.findIndex(other => other.url === item.url) === index);
+    if (sources.length < 2) {
+      throw new Error('Pesquisa não retornou ao menos duas fontes institucionais confiáveis');
+    }
 
     const contentResponse = await geminiRequest(geminiKey, {
       contents: [{ parts: [{ text: `Você é especialista em educação profissional brasileira. Gere SOMENTE JSON válido para o tópico "${topic.title}", ano ${topic.target_grade}.

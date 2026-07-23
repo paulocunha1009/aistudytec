@@ -4,7 +4,7 @@ const LEVELS = ['simple', 'technical', 'advanced'];
 
 export const getTopicReview = async topicId => {
   const client = requireSupabase();
-  const [topicResult, explanationsResult, pathsResult, questionsResult, videosResult] = await Promise.all([
+  const [topicResult, explanationsResult, pathsResult, questionsResult, videosResult, sourcesResult] = await Promise.all([
     client.from('topics').select(`
       id, title, status, target_grade, version, reviewed_at,
       topic_curriculum_descriptors(
@@ -21,9 +21,11 @@ export const getTopicReview = async topicId => {
     client.from('topic_videos').select(`
       id, level, youtube_video_id, title, channel_title, thumbnail_url, approved, order_index
     `).eq('topic_id', topicId).order('order_index'),
+    client.from('topic_sources').select('id, title, url, domain, verified_at')
+      .eq('topic_id', topicId).order('domain'),
   ]);
 
-  const firstError = [topicResult, explanationsResult, pathsResult, questionsResult, videosResult]
+  const firstError = [topicResult, explanationsResult, pathsResult, questionsResult, videosResult, sourcesResult]
     .find(result => result.error)?.error;
   if (firstError) throw new Error('Não foi possível carregar a revisão do tópico.');
 
@@ -43,7 +45,40 @@ export const getTopicReview = async topicId => {
       level,
       (videosResult.data || []).filter(video => video.level === level),
     ])),
+    sources: sourcesResult.data || [],
   };
+};
+
+export const buildTopicGate = topic => {
+  const completePath = path => path && [
+    'hook', 'objectives', 'keyIdeas', 'realWorldConnection', 'guidedInvestigation',
+    'watchMission', 'handsOnChallenge', 'reflectionQuestions', 'discussionPrompt',
+  ].every(field => path[field]);
+  return [
+    {
+      key: 'explanations',
+      label: 'Explicações detalhadas nos três níveis',
+      ready: LEVELS.every(level => (topic.explanations?.[level] || '').trim().length >= 120),
+    },
+    {
+      key: 'paths',
+      label: 'Trilhas imersivas completas nos três níveis',
+      ready: LEVELS.every(level => completePath(topic.learningPaths?.[level])),
+    },
+    {
+      key: 'questions',
+      label: 'Oito ou mais questões com gabarito, feedback e descritor',
+      ready: topic.questions.length >= 8 && topic.questions.every(question =>
+        question.correct_option
+        && (question.explanation || '').trim().length >= 20
+        && question.descriptors.length > 0),
+    },
+    {
+      key: 'videos',
+      label: 'Um vídeo aprovado pelo professor em cada nível',
+      ready: LEVELS.every(level => topic.videos?.[level]?.some(video => video.approved)),
+    },
+  ];
 };
 
 export const saveTopicExplanation = async ({ topicId, level, content }) => {

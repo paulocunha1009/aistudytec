@@ -136,9 +136,29 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 - gate validado: publicação bloqueada até aprovação de um vídeo por nível;
 - nenhum conteúdo foi liberado ao aluno sem curadoria docente.
 
+## Incremento 6 — transparência e checklist de curadoria
+
+- checklist visual apresenta quatro critérios do gate em tempo real;
+- fontes fundamentadas são exibidas ao professor e preparadas para a experiência publicada do aluno;
+- política server-side aceita somente universidades, órgãos públicos, documentação primária e jornalismo de grande prestígio;
+- agregadores e fontes fora da lista institucional são eliminados antes da persistência;
+- geração falha de forma segura se não encontrar ao menos duas fontes confiáveis;
+- ranking de vídeos exige correspondência textual com o tema, considera duração e relevância;
+- o mesmo vídeo não é repetido entre níveis;
+- professor pode aprovar e também desfazer a aprovação de um vídeo.
+
+### Homologação real
+
+- checklist do tópico piloto: 3/4 critérios;
+- pendência corretamente identificada: aprovação humana de um vídeo por nível;
+- fontes preservadas após o filtro: USP, UFSC, RNP, Governo Federal e IBM;
+- fontes como Medium, Scribd e Wikipédia foram removidas pela política;
+- nove suítes e 39 testes frontend aprovados;
+- build de produção aprovado.
+
 ## Próximo incremento
 
-- exibir fontes fundamentadas na tela de curadoria e na experiência do aluno;
-- aprimorar ranking e diversidade dos vídeos;
-- adicionar checklist visual do gate antes da confirmação;
-- homologar edição completa e publicação docente.
+- permitir troca manual de vídeos inadequados sem regenerar todo o material;
+- exibir descritor e competência em cada questão na curadoria;
+- homologar a publicação final com decisão explícita do professor;
+- migrar a leitura do aluno e o quiz remanescentes para Supabase.

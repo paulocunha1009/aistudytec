@@ -1,4 +1,11 @@
-import { enrollStudent, listClassStudents, removeStudent } from './classRosterService';
+import {
+  authorizeOrEnrollStudent,
+  enrollStudent,
+  listClassStudents,
+  listPendingStudentGrants,
+  removeStudent,
+  revokePendingStudentGrant,
+} from './classRosterService';
 import { requireSupabase } from '../../lib/supabase';
 
 jest.mock('../../lib/supabase', () => ({
@@ -50,6 +57,45 @@ describe('classRosterService', () => {
     expect(rpc).toHaveBeenCalledWith('remove_student_from_class', {
       p_class_id: 'class-1',
       p_student_id: 'student-1',
+    });
+  });
+
+  test('professor autoriza ou matricula aluno sem escolher papel', async () => {
+    const rpc = jest.fn().mockResolvedValue({ data: { status: 'authorized' }, error: null });
+    requireSupabase.mockReturnValue({ rpc });
+
+    await expect(authorizeOrEnrollStudent({
+      classId: 'class-1',
+      email: '  NOVO@EXEMPLO.COM ',
+      validDays: 7,
+    })).resolves.toEqual({ status: 'authorized' });
+
+    expect(rpc).toHaveBeenCalledWith('authorize_or_enroll_class_student', expect.objectContaining({
+      p_class_id: 'class-1',
+      p_email: 'novo@exemplo.com',
+    }));
+    expect(rpc.mock.calls[0][1]).not.toHaveProperty('role');
+  });
+
+  test('lista somente autorizações pendentes de aluno da turma', async () => {
+    const query = {
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockResolvedValue({ data: [{ id: 'grant-1' }], error: null }),
+    };
+    requireSupabase.mockReturnValue({ from: jest.fn(() => query) });
+    await expect(listPendingStudentGrants('class-1')).resolves.toEqual([{ id: 'grant-1' }]);
+    expect(query.eq).toHaveBeenCalledWith('class_id', 'class-1');
+    expect(query.eq).toHaveBeenCalledWith('role', 'student');
+    expect(query.eq).toHaveBeenCalledWith('status', 'pending');
+  });
+
+  test('revoga autorização por RPC protegida', async () => {
+    const rpc = jest.fn().mockResolvedValue({ error: null });
+    requireSupabase.mockReturnValue({ rpc });
+    await revokePendingStudentGrant('grant-1');
+    expect(rpc).toHaveBeenCalledWith('revoke_teacher_student_grant', {
+      p_grant_id: 'grant-1',
     });
   });
 });

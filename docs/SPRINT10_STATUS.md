@@ -84,9 +84,37 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 - build de produção aprovado;
 - teste pgTAP `007_teacher_enrollment.test.sql` adicionado para autorização, papéis, isolamento, remoção e rematrícula.
 
+## Incremento 3 — tópicos orientados pelo currículo
+
+- listagem e criação de tópicos migradas do servidor legado para Supabase;
+- todo tópico docente exige ao menos um descritor;
+- somente descritores pertencentes ao blueprint da turma são aceitos;
+- vínculo persistido em `topic_curriculum_descriptors`;
+- criação protegida pela função `create_teacher_topic`;
+- evento `topic.created` registrado na auditoria;
+- interface homologada com D01, D02, D03, D11 e D12 da turma piloto.
+
+## Incremento 4 — cadastro delegado de alunos
+
+- professor cadastra aluno por e-mail dentro de turma própria;
+- conta ativa existente é matriculada imediatamente;
+- conta nova recebe autorização exclusiva de aluno e entra pelo Google;
+- no primeiro acesso, perfil e matrícula são ativados automaticamente;
+- professor não informa nem altera papel, portanto não pode criar professor ou master;
+- professor não acessa turmas, alunos ou autorizações de outro professor;
+- autorizações pendentes ficam visíveis somente ao criador e podem ser revogadas;
+- master em `aal2` mantém autoridade global;
+- operações permanecem auditadas e nenhuma senha provisória é criada.
+
+### Evidências técnicas adicionais
+
+- migrações `20260723001100`, `20260723001200` e `20260723001300` aplicadas no staging;
+- oito suítes e 36 testes frontend aprovados;
+- build de produção aprovado;
+- testes pgTAP `008_curriculum_guided_topics.test.sql` e `009_teacher_delegated_student_access.test.sql` adicionados.
+
 ## Próximo incremento
 
-- gestão de tópicos diretamente no PostgreSQL;
-- seleção de descritores por tópico e por questão;
+- seleção de descritores por questão;
 - geração orientada pelo blueprint;
 - preview e gate de publicação docente.

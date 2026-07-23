@@ -59,9 +59,33 @@ Turma criada no staging:
 - build de produção aprovado;
 - testes pgTAP adicionados para criação, isolamento, catálogo e coerência do blueprint.
 
+## Incremento 2 — matrícula docente de alunos credenciados
+
+O professor responsável pela turma agora pode matricular e remover alunos diretamente na área de Gestão. A operação usa o e-mail normalizado como chave de busca, mas somente aceita contas previamente autorizadas pelo master, ativas e com papel de aluno.
+
+### Regras de segurança
+
+- apenas o proprietário da turma ou o master em `aal2` administra a matrícula;
+- a identidade é resolvida no PostgreSQL, sem aceitar UUID informado pelo navegador;
+- contas pendentes, suspensas ou com outro papel são rejeitadas;
+- a remoção é lógica por `left_at`, preservando histórico;
+- uma nova matrícula reativa o vínculo anterior sem duplicá-lo;
+- matrícula e remoção geram os eventos auditáveis `class.student_enrolled` e `class.student_removed`.
+
+### Homologação real
+
+- turma: `Turma Piloto — Técnico em Informática`;
+- aluno: `Phc Informática`;
+- conta: `atendimentophcinfor@gmail.com`;
+- resultado: aluno matriculado e exibido na lista da turma;
+- ação de remoção disponibilizada ao responsável pela turma;
+- migração `20260723001000` aplicada no staging;
+- sete suítes e 30 testes frontend aprovados;
+- build de produção aprovado;
+- teste pgTAP `007_teacher_enrollment.test.sql` adicionado para autorização, papéis, isolamento, remoção e rematrícula.
+
 ## Próximo incremento
 
-- matrícula de alunos credenciados pelo professor;
 - gestão de tópicos diretamente no PostgreSQL;
 - seleção de descritores por tópico e por questão;
 - geração orientada pelo blueprint;

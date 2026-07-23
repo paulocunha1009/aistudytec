@@ -3,6 +3,7 @@ import ClassManagement from './ClassManagement';
 import TopicManager from './TopicManager';
 import TopicReview from './TopicReview';
 import TeacherDashboard from './TeacherDashboard';
+import ClassRoster from './ClassRoster';
 
 const SUBTABS = [
   { key: 'topics', label: 'Tópicos' },
@@ -19,6 +20,7 @@ const TeacherPanel = ({ apiUrl, currentUser, addToast }) => {
       <h1 className="text-2xl font-black text-slate-800">Gestão</h1>
       <ClassManagement currentUser={currentUser} selectedClassId={classId}
         onSelectClass={id => { setClassId(id); setTopicId(null); }} addToast={addToast} />
+      {classId && <ClassRoster classId={classId} addToast={addToast} />}
 
       {classId && !topicId && (
         <>

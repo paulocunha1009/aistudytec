@@ -1,7 +1,7 @@
 import React from 'react';
-import { BookOpen, GraduationCap, Briefcase, Settings, Lock, LogOut, Menu, CircuitBoard, Sparkles } from 'lucide-react';
+import { BookOpen, GraduationCap, Briefcase, Settings, LogOut, Menu, CircuitBoard, Sparkles, Users } from 'lucide-react';
 
-const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, currentUser, onLogout, onOpenLogin }) => {
+const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, currentUser, onLogout }) => {
   const navigate = (tab) => {
     setActiveTab(tab);
     if (window.innerWidth < 768) setIsOpen(false);
@@ -32,14 +32,15 @@ const Sidebar = ({ isOpen, setIsOpen, activeTab, setActiveTab, currentUser, onLo
     <nav aria-label="Navegação principal" className="relative flex-1 space-y-2 px-4">
       <button onClick={() => navigate('home')} className={`group flex min-h-12 w-full items-center gap-4 rounded-2xl px-4 font-bold transition ${activeTab === 'home' ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-600/20' : 'text-slate-400 hover:bg-white/[0.07] hover:text-white'}`}><BookOpen /> <span>Explorar</span></button>
       <button onClick={() => navigate('student-area')} className={`group flex min-h-12 w-full items-center gap-4 rounded-2xl px-4 font-bold transition ${activeTab === 'student-area' ? 'bg-gradient-to-r from-cyan-600 to-teal-500 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-400 hover:bg-white/[0.07] hover:text-white'}`}><GraduationCap /> <span>Minha jornada</span></button>
-      {(currentUser?.type === 'teacher' || currentUser?.type === 'master') ? (
+      {(currentUser?.type === 'teacher' || currentUser?.type === 'master') && (
         <button onClick={() => navigate('teacher')} className={`flex min-h-12 w-full items-center gap-4 rounded-2xl px-4 font-bold transition ${activeTab === 'teacher' ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white' : 'text-slate-400 hover:bg-white/[0.07] hover:text-white'}`}><Briefcase /> Gestão</button>
-      ) : (
-        <button onClick={onOpenLogin} className="flex min-h-12 w-full items-center gap-4 rounded-2xl px-4 font-bold text-slate-400 transition hover:bg-white/[0.07] hover:text-white"><Lock /> Professor</button>
+      )}
+      {currentUser?.type === 'master' && (
+        <button onClick={() => navigate('access-management')} className={`flex min-h-12 w-full items-center gap-4 rounded-2xl px-4 font-bold transition ${activeTab === 'access-management' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950' : 'text-slate-400 hover:bg-white/[0.07] hover:text-white'}`}><Users /> Acessos</button>
       )}
       <button onClick={() => navigate('settings')} className={`flex min-h-12 w-full items-center gap-4 rounded-2xl px-4 font-bold transition ${activeTab === 'settings' ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/[0.07] hover:text-white'}`}><Settings /> Configurações</button>
     </nav>
-    {currentUser && <div className="relative border-t border-white/10 p-4"><button onClick={onLogout} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 font-bold text-rose-300 hover:bg-rose-400/10"><LogOut /> Sair</button></div>}
+    {currentUser && <div className="relative border-t border-white/10 p-4"><button onClick={() => onLogout('local')} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 font-bold text-rose-300 hover:bg-rose-400/10"><LogOut /> Sair</button></div>}
       </aside>
     </>
   );

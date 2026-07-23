@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { School } from 'lucide-react';
 import { api } from './api/client';
 import Sidebar from './components/Sidebar';
+import PrivateAccessPortal from './components/PrivateAccessPortal';
 import Toast from './components/Toast';
 import TopicBrowser from './components/student/TopicBrowser';
 import StudyView from './components/student/StudyView';
 import Quiz from './components/student/Quiz';
 import ProgressView from './components/student/ProgressView';
 import TeacherPanel from './components/teacher/TeacherPanel';
+import AccessManagement from './components/master/AccessManagement';
 import { Button, Card, Input } from './design-system';
 import AuthDialog from './features/auth/AuthDialog';
 import MfaGate from './features/auth/MfaGate';
@@ -89,7 +91,6 @@ const AISTUDYTECDashboard = () => {
         setActiveTab={setActiveTab}
         currentUser={currentUser}
         onLogout={handleLogout}
-        onOpenLogin={() => setShowLoginModal(true)}
       />
       <Toast toasts={toasts} removeToast={id => setToasts(previous => previous.filter(toast => toast.id !== id))} />
 
@@ -149,6 +150,10 @@ const AISTUDYTECDashboard = () => {
           <TeacherPanel apiUrl={apiUrl} currentUser={currentUser} addToast={addToast} />
         )}
 
+        {activeTab === 'access-management' && currentUser?.type === 'master' && (
+          <AccessManagement currentUser={currentUser} addToast={addToast} />
+        )}
+
         <AuthDialog
           open={showLoginModal || auth.recoveryMode}
           recoveryMode={auth.recoveryMode}
@@ -173,6 +178,19 @@ const AISTUDYTECDashboard = () => {
 
   if (auth.loading) {
     return <main className="grid min-h-screen place-items-center bg-[#07111f] text-white"><p role="status">Protegendo sua sessão…</p></main>;
+  }
+
+  if (!currentUser) {
+    return <>
+      <PrivateAccessPortal onOpenLogin={() => setShowLoginModal(true)} error={auth.error} />
+      <AuthDialog
+        open={showLoginModal || auth.recoveryMode}
+        recoveryMode={auth.recoveryMode}
+        onClose={() => { setShowLoginModal(false); auth.setRecoveryMode(false); }}
+        onAuthenticated={handleLogin}
+        onRecoveryComplete={() => auth.setRecoveryMode(false)}
+      />
+    </>;
   }
 
   return <MfaGate identity={auth.identity} mfa={auth.mfa} onVerified={auth.refreshIdentity}>{content}</MfaGate>;

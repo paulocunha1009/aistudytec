@@ -1,6 +1,6 @@
 begin;
 
-select plan(11);
+select plan(12);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -76,6 +76,14 @@ select is(
   ),
   '{}'::jsonb,
   'hook aceita e-mail previamente autorizado sem diferenciar maiúsculas'
+);
+
+select is(
+  public.hook_restrict_signup_to_grants(
+    '{"user":{"user_metadata":{"email":"STUDENT-APPROVED@test.invalid"}}}'::jsonb
+  ),
+  '{}'::jsonb,
+  'hook aceita e-mail fornecido nos metadados do provedor OAuth'
 );
 
 insert into auth.users (

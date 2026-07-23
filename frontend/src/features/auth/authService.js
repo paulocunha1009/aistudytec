@@ -12,6 +12,28 @@ export const authErrorMessage = (error, fallback = 'Não foi possível concluir 
   return errorMessages[error.code] || fallback;
 };
 
+const safelyDecode = value => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+export const oauthRedirectError = (location = window.location) => {
+  const search = new URLSearchParams(location.search || '');
+  const hash = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+  const code = search.get('error') || hash.get('error');
+  const description = search.get('error_description') || hash.get('error_description');
+
+  if (!code && !description) return '';
+  const decoded = safelyDecode(description || '');
+  if (code === 'access_denied' || decoded.toLowerCase().includes('não foi autorizado')) {
+    return 'Seu e-mail não possui uma autorização ativa. Solicite a liberação ao administrador.';
+  }
+  return decoded || 'Não foi possível concluir o acesso com Google.';
+};
+
 export const loadIdentity = async (session) => {
   if (!session?.user) return null;
   const client = requireSupabase();

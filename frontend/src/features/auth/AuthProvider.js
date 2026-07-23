@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
-import { getMfaState, loadIdentity, signOut } from './authService';
+import { getMfaState, loadIdentity, oauthRedirectError, signOut } from './authService';
 
 const AuthContext = createContext(null);
 
@@ -20,6 +20,10 @@ export const AuthProvider = ({ children }) => {
       return;
     }
     const [nextIdentity, nextMfa] = await Promise.all([loadIdentity(nextSession), getMfaState()]);
+    if (nextIdentity?.status !== 'active') {
+      await signOut('local');
+      throw new Error('Esta conta não está ativa. Solicite autorização ao administrador.');
+    }
     setSession(nextSession);
     setIdentity(nextIdentity);
     setMfa(nextMfa);
@@ -32,6 +36,11 @@ export const AuthProvider = ({ children }) => {
     }
 
     let active = true;
+    const redirectError = oauthRedirectError();
+    if (redirectError) {
+      setError(redirectError);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
     supabase.auth.getSession().then(async ({ data }) => {
       try {
         if (active) await refreshIdentity(data.session);
@@ -87,4 +96,3 @@ export const useAuth = () => {
   if (!value) throw new Error('useAuth deve ser usado dentro de AuthProvider.');
   return value;
 };
-

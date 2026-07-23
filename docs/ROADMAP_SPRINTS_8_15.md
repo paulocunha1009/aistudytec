@@ -35,7 +35,7 @@ Dependências: acesso ao Supabase e criação do projeto de staging.
 
 ## Sprint 9 — Identidade completa e master com MFA — P0 — 18 pontos
 
-Status: em andamento. Auth/PKCE, recuperação, logout, gate `aal2` e identidade master nominal em staging foram entregues; ativação do convite, TOTP real, convite administrativo definitivo e testes integrados permanecem abertos.
+Status: concluída em 23 de julho de 2026. Auth/PKCE, Google OAuth, cadastro privado autorizado, logout, gate `aal2`, TOTP real, console master de autorizações e testes integrados foram homologados. Evidências complementares em `docs/SPRINT9_ACCESS_HARDENING.md`.
 
 Objetivo: como usuário, quero autenticação, recuperação e sessões seguras; como master, quero MFA obrigatório e administração auditada.
 

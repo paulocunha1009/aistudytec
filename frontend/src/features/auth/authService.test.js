@@ -1,6 +1,7 @@
 import {
   getMfaState,
   loadIdentity,
+  oauthRedirectError,
   requestPasswordRecovery,
   signIn,
   signInWithGoogle,
@@ -21,6 +22,13 @@ const profileQuery = data => ({
 describe('authService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  test('traduz bloqueio OAuth de cadastro não autorizado', () => {
+    expect(oauthRedirectError({
+      search: '?error=access_denied&error_description=Seu+acesso+ainda+n%C3%A3o+foi+autorizado+pelo+administrador.',
+      hash: '',
+    })).toBe('Seu e-mail não possui uma autorização ativa. Solicite a liberação ao administrador.');
   });
 
   test('carrega identidade pelo perfil protegido', async () => {

@@ -32,7 +32,7 @@ Critérios: migração sem perda de contas; bootstrap de uso único; master com 
 
 Dependências: definição de provedor de e-mail para recuperação externa; HTTPS estável para evolução WebAuthn; armazenamento compartilhado antes de escalar horizontalmente.
 
-Status: fundação PostgreSQL/RLS e CI concluídos; Sprint 8 encerrada. Na Sprint 9, login Supabase/PKCE, recuperação, logout local/global e gate TOTP `aal2` do master foram implementados no frontend. Permanecem convite administrativo, auditoria server-side, configuração de e-mail e validação integrada real.
+Status: fundação PostgreSQL/RLS e CI concluídos. Sprint 9 homologada com Google OAuth, autorização prévia pelo master, TOTP `aal2`, RLS, auditoria, revogação e testes reais de acesso autorizado e bloqueado. A recuperação por e-mail permanece fora do fluxo Google enquanto não houver domínio/remetente transacional.
 
 ### PB-003 Decidir ano escolar do aluno — 3 pontos
 

@@ -3,7 +3,9 @@ begin;
 select plan(25);
 
 -- Personas isoladas e determinísticas. A transação é revertida ao final.
+set local role supabase_auth_admin;
 alter table auth.users disable trigger on_auth_user_created;
+reset role;
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_user_meta_data, raw_app_meta_data, created_at, updated_at
@@ -13,7 +15,9 @@ insert into auth.users (
   ('20000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'teacher1@test.invalid', '', now(), '{"name":"Professor Um"}', '{}', now(), now()),
   ('20000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'teacher2@test.invalid', '', now(), '{"name":"Professor Dois"}', '{}', now(), now()),
   ('30000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'master@test.invalid', '', now(), '{"name":"Master"}', '{}', now(), now());
+set local role supabase_auth_admin;
 alter table auth.users enable trigger on_auth_user_created;
+reset role;
 
 insert into public.profiles (id, role, status, name, email) values
   ('10000000-0000-0000-0000-000000000001', 'student', 'active', 'Estudante Um', 'student1@test.invalid'),

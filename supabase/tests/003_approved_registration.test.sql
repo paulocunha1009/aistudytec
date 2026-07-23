@@ -2,7 +2,9 @@ begin;
 
 select plan(10);
 
+set local role supabase_auth_admin;
 alter table auth.users disable trigger on_auth_user_created;
+reset role;
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_user_meta_data, raw_app_meta_data, created_at, updated_at
@@ -18,7 +20,9 @@ insert into auth.users (
   now(),
   now()
 );
+set local role supabase_auth_admin;
 alter table auth.users enable trigger on_auth_user_created;
+reset role;
 
 insert into public.profiles (id, role, status, name, email)
 values (

@@ -52,5 +52,8 @@ policy = "per_worker"
 [functions.generate-topic]
 verify_jwt = false
 
+[functions.validate-topic-video]
+verify_jwt = false
+
 [analytics]
 enabled = false

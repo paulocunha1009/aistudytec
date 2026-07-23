@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Youtube, CheckCircle2, RefreshCw, Send, Trash2, Loader2, AlertCircle, ExternalLink } from 'lucide-react';
 import { Badge, Button, Card, ConfirmDialog, ErrorState, Skeleton } from '../../design-system';
 import {
+  addValidatedTopicVideo,
   deleteTopicQuestion,
   buildTopicGate,
   generateTopicContent,
@@ -25,6 +26,8 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
   const [pendingSaves, setPendingSaves] = useState(0);
   const [loadState, setLoadState] = useState('loading');
   const [confirmation, setConfirmation] = useState(null);
+  const [videoUrls, setVideoUrls] = useState({});
+  const [replacingLevel, setReplacingLevel] = useState(null);
 
   const load = () => {
     setLoadState('loading');
@@ -82,6 +85,31 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
         },
       }));
       addToast(e.message, 'error');
+    }
+  };
+
+  const addVideo = async level => {
+    const youtubeUrl = videoUrls[level]?.trim();
+    if (!youtubeUrl) {
+      addToast('Cole o link do vídeo do YouTube.', 'error');
+      return;
+    }
+    setReplacingLevel(level);
+    try {
+      const video = await addValidatedTopicVideo({ topicId, level, youtubeUrl });
+      setTopic(current => ({
+        ...current,
+        videos: {
+          ...current.videos,
+          [level]: [video, ...(current.videos[level] || []).filter(item => item.id !== video.id)],
+        },
+      }));
+      setVideoUrls(current => ({ ...current, [level]: '' }));
+      addToast('Vídeo validado e adicionado como candidato.', 'success');
+    } catch (error) {
+      addToast(error.message, 'error');
+    } finally {
+      setReplacingLevel(null);
     }
   };
 
@@ -212,6 +240,11 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
                 </select>
               </div>
               <textarea aria-label="Explicação do feedback" className="w-full p-2 border rounded mt-2 text-xs text-slate-500" placeholder="Explicação do feedback" defaultValue={q.explanation || ''} onBlur={e => saveQuestion(q.id, { explanation: e.target.value })} />
+              <div className="mt-3 flex flex-wrap gap-2">
+                {q.descriptors.map(descriptor => <span key={descriptor.id} className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800" title={descriptor.description}>
+                  {descriptor.code} · {descriptor.curriculum_competencies?.code || 'Competência'}
+                </span>)}
+              </div>
             </div>
           ))}
         </div>
@@ -226,6 +259,17 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
           {LEVELS.map(l => (
             <div key={l.key}>
               <p className="text-xs font-bold text-slate-400 uppercase mb-2">{l.label}</p>
+              <div className="mb-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-2">
+                <label htmlFor={`video-url-${l.key}`} className="text-[10px] font-black uppercase tracking-wider text-slate-500">Adicionar outro vídeo</label>
+                <input id={`video-url-${l.key}`} type="url" value={videoUrls[l.key] || ''}
+                  onChange={event => setVideoUrls(current => ({ ...current, [l.key]: event.target.value }))}
+                  placeholder="https://youtube.com/watch?v=..."
+                  className="mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-xs" />
+                <button type="button" onClick={() => addVideo(l.key)} disabled={replacingLevel === l.key}
+                  className="mt-2 w-full rounded-md bg-slate-800 px-2 py-2 text-xs font-bold text-white disabled:opacity-60">
+                  {replacingLevel === l.key ? 'Validando...' : 'Validar e adicionar'}
+                </button>
+              </div>
               <div className="space-y-2">
                 {(topic.videos?.[l.key] || []).map(v => (
                   <div key={v.id} className={`rounded-lg border p-2 ${v.approved ? 'border-green-500 bg-green-50' : 'border-slate-200'}`}>

@@ -1,4 +1,10 @@
-import { buildTopicGate, generateTopicContent, publishTopic } from './topicReviewService';
+import {
+  addValidatedTopicVideo,
+  buildTopicGate,
+  generateTopicContent,
+  publishTopic,
+  setVideoApproval,
+} from './topicReviewService';
 import { requireSupabase } from '../../lib/supabase';
 
 jest.mock('../../lib/supabase', () => ({ requireSupabase: jest.fn() }));
@@ -57,5 +63,32 @@ describe('topicReviewService', () => {
     const gate = buildTopicGate(topic);
     expect(gate.filter(item => item.ready)).toHaveLength(3);
     expect(gate.find(item => item.key === 'videos').ready).toBe(false);
+  });
+
+  test('aprovação de vídeo usa contrato auditado do banco', async () => {
+    const rpc = jest.fn().mockResolvedValue({ data: {}, error: null });
+    requireSupabase.mockReturnValue({ rpc });
+    await setVideoApproval({ videoId: 'video-1', approved: true });
+    expect(rpc).toHaveBeenCalledWith('set_topic_video_approval', {
+      p_video_id: 'video-1',
+      p_approved: true,
+    });
+  });
+
+  test('envia vídeo escolhido para validação server-side', async () => {
+    const invoke = jest.fn().mockResolvedValue({ data: { video: { id: 'video-2' } }, error: null });
+    requireSupabase.mockReturnValue({ functions: { invoke } });
+    await expect(addValidatedTopicVideo({
+      topicId: 'topic-1',
+      level: 'technical',
+      youtubeUrl: ' https://youtube.com/watch?v=abcdefghijk ',
+    })).resolves.toEqual({ id: 'video-2' });
+    expect(invoke).toHaveBeenCalledWith('validate-topic-video', {
+      body: {
+        topicId: 'topic-1',
+        level: 'technical',
+        youtubeUrl: 'https://youtube.com/watch?v=abcdefghijk',
+      },
+    });
   });
 });

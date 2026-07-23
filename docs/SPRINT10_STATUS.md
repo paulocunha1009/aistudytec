@@ -171,3 +171,17 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 - posição de rolagem, textos em edição e contexto visual são preservados;
 - em caso de falha no banco, o cartão retorna ao estado anterior e apresenta erro;
 - homologado visualmente com o tópico publicado da turma piloto.
+
+## Incremento 7 — substituição segura de vídeos
+
+- professor pode informar um link do YouTube separadamente em cada nível;
+- Edge Function valida URL, existência, acesso público e permissão de incorporação;
+- somente vídeos entre 3 e 20 minutos são aceitos;
+- título e descrição precisam apresentar relação textual com o tópico;
+- vídeo validado entra como candidato e ainda exige aprovação humana;
+- aprovação usa função PostgreSQL auditada e mantém somente um vídeo aprovado por nível;
+- qualquer alteração de aprovação em conteúdo publicado devolve o tópico para `generated`;
+- nova publicação e nova decisão docente tornam-se obrigatórias após a mudança;
+- cada questão agora exibe seu descritor e competência, como `D11 · C03`;
+- controles homologados sem alterar o tópico real já publicado;
+- nove suítes e 41 testes frontend aprovados.

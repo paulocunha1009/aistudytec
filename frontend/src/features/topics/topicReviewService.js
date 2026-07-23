@@ -16,7 +16,12 @@ export const getTopicReview = async topicId => {
     client.from('quiz_questions').select(`
       id, question, options, explanation, skill, difficulty, target_grade, order_index,
       quiz_answer_keys(correct_option),
-      quiz_question_descriptors(curriculum_descriptors(id, code, description))
+      quiz_question_descriptors(
+        curriculum_descriptors(
+          id, code, description,
+          curriculum_competencies(code, description)
+        )
+      )
     `).eq('topic_id', topicId).order('order_index'),
     client.from('topic_videos').select(`
       id, level, youtube_video_id, title, channel_title, thumbnail_url, approved, order_index
@@ -92,9 +97,29 @@ export const saveTopicExplanation = async ({ topicId, level, content }) => {
 };
 
 export const setVideoApproval = async ({ videoId, approved }) => {
-  const { error } = await requireSupabase().from('topic_videos')
-    .update({ approved }).eq('id', videoId);
+  const { error } = await requireSupabase().rpc('set_topic_video_approval', {
+    p_video_id: videoId,
+    p_approved: approved,
+  });
   if (error) throw new Error('Não foi possível atualizar o vídeo.');
+};
+
+export const addValidatedTopicVideo = async ({ topicId, level, youtubeUrl }) => {
+  const { data, error } = await requireSupabase().functions.invoke('validate-topic-video', {
+    body: { topicId, level, youtubeUrl: youtubeUrl.trim() },
+  });
+  if (error) {
+    let serverMessage;
+    try {
+      const details = await error.context?.json();
+      serverMessage = details?.error;
+    } catch (_) {
+      // Mantém mensagem segura abaixo.
+    }
+    throw new Error(serverMessage || error.message || 'Não foi possível validar o vídeo.');
+  }
+  if (data?.error) throw new Error(data.error);
+  return data.video;
 };
 
 export const saveTopicQuestion = async ({ questionId, patch }) => {

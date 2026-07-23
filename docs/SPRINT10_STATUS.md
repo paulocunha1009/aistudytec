@@ -185,3 +185,27 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 - cada questão agora exibe seu descritor e competência, como `D11 · C03`;
 - controles homologados sem alterar o tópico real já publicado;
 - nove suítes e 41 testes frontend aprovados.
+
+## Incremento 8 — experiência publicada e quiz seguro do aluno
+
+- área de estudo deixou de gerar temas livres e agora apresenta somente materiais revisados e publicados;
+- materiais são descobertos pelas matrículas ativas do aluno, inclusive quando ele participa de mais de uma turma;
+- cada cartão identifica a turma, o ano, a versão e a natureza da publicação docente;
+- explicações, trilhas imersivas, fontes confiáveis, vídeos aprovados e questões são lidos diretamente do Supabase;
+- vídeos não aprovados e tópicos em rascunho continuam invisíveis ao estudante pelas políticas RLS;
+- o navegador envia somente o identificador da questão e a alternativa escolhida;
+- o gabarito permanece em `quiz_answer_keys` e a correção ocorre exclusivamente na função server-side `submit_published_topic_quiz`;
+- a função exige conta de aluno, matrícula ativa e tópico publicado;
+- tentativa, respostas, pontuação, domínio acumulado por habilidade e auditoria são persistidos atomicamente;
+- feedback imediato não revela a resposta correta durante a tentativa;
+- migração `20260723001800_secure_student_quiz.sql` aplicada no staging;
+- lint remoto do schema aprovado sem erros;
+- dez suítes e 43 testes frontend aprovados;
+- teste pgTAP `011_secure_student_quiz.test.sql` cobre correção, progresso, sigilo do gabarito, auditoria e isolamento de aluno externo;
+- build de produção aprovado.
+
+## Próximo incremento
+
+- conectar plano diário, fila de revisão e mapa de habilidades aos registros reais do Supabase;
+- oferecer ao professor indicadores agregados por turma e descritor sem expor respostas individuais indevidas;
+- homologar visualmente toda a jornada com uma conta real de aluno matriculado.

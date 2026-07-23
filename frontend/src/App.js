@@ -121,7 +121,7 @@ const AISTUDYTECDashboard = () => {
         )}
 
         {activeTab === 'home' && !activeTopic && (
-          <TopicBrowser apiUrl={apiUrl} currentUser={currentUser} onSelectTopic={setActiveTopic} addToast={addToast} />
+          <TopicBrowser onSelectTopic={setActiveTopic} addToast={addToast} />
         )}
 
         {activeTab === 'home' && activeTopic && (
@@ -165,8 +165,6 @@ const AISTUDYTECDashboard = () => {
         {quizMode && activeTopic && (
           <Quiz
             topic={activeTopic}
-            currentUser={currentUser}
-            apiUrl={apiUrl}
             addToast={addToast}
             onClose={() => setQuizMode(false)}
             onFinish={finishQuiz}

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, XCircle, ArrowRight, BarChart3, RefreshCw, Sparkles } from 'lucide-react';
-import { api } from '../../api/client';
+import { X, CheckCircle2, ArrowRight, BarChart3, RefreshCw, Sparkles } from 'lucide-react';
 import { Badge, Button, Card, Progress } from '../../design-system';
+import { submitPublishedQuiz } from '../../features/student/studentTopicService';
 
 const optionLetter = (opt) => opt.trim().charAt(0);
 
-const Quiz = ({ topic, currentUser, apiUrl, onFinish, onClose, addToast }) => {
+const Quiz = ({ topic, onFinish, onClose, addToast }) => {
   const questions = topic.questions || [];
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -35,11 +35,8 @@ const Quiz = ({ topic, currentUser, apiUrl, onFinish, onClose, addToast }) => {
 
     setSubmitting(true);
     try {
-      const result = await api.submitQuizAttempt(apiUrl, {
+      const result = await submitPublishedQuiz({
         topicId: topic.id,
-        userId: currentUser?.data?.id,
-        studentName: currentUser?.data?.name,
-        classId: currentUser?.data?.classId,
         answers: newAnswers,
       });
       setResult(result);
@@ -80,8 +77,6 @@ const Quiz = ({ topic, currentUser, apiUrl, onFinish, onClose, addToast }) => {
     );
   }
 
-  const isCorrect = answered && optionLetter(selected) === question.correct_option;
-
   return (
     <div className="fixed inset-0 z-[70] flex flex-col bg-white" role="dialog" aria-modal="true" aria-labelledby="quiz-title">
       <div className="border-b p-4">
@@ -96,12 +91,10 @@ const Quiz = ({ topic, currentUser, apiUrl, onFinish, onClose, addToast }) => {
           <h2 className="text-2xl font-bold mb-8 text-center">{question.question}</h2>
           <div className="grid gap-4">
             {question.options.map((opt, i) => {
-              const letter = optionLetter(opt);
               const isSelected = selected === opt;
               let style = 'border hover:bg-blue-50';
               if (answered) {
-                if (letter === question.correct_option) style = 'border-green-500 bg-green-50';
-                else if (isSelected) style = 'border-red-500 bg-red-50';
+                if (isSelected) style = 'border-blue-600 bg-blue-50 ring-2 ring-blue-100';
                 else style = 'border opacity-50';
               }
               return (
@@ -113,11 +106,11 @@ const Quiz = ({ topic, currentUser, apiUrl, onFinish, onClose, addToast }) => {
           </div>
 
           {answered && (
-            <div className={`mt-6 p-4 rounded-xl flex gap-3 ${isCorrect ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-              {isCorrect ? <CheckCircle2 className="shrink-0" /> : <XCircle className="shrink-0" />}
+            <div className="mt-6 flex gap-3 rounded-xl bg-blue-50 p-4 text-blue-800">
+              <CheckCircle2 className="shrink-0" />
               <div>
-                <p className="font-bold">{isCorrect ? 'Certo!' : 'Não foi dessa vez.'}</p>
-                {question.explanation && <p className="text-sm mt-1">{question.explanation}</p>}
+                <p className="font-bold">Resposta registrada</p>
+                <p className="mt-1 text-sm">A correção segura será feita ao finalizar o quiz.</p>
               </div>
             </div>
           )}

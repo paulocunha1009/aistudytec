@@ -18,8 +18,8 @@ Como usuário convidado, quero entrar, recuperar minha senha e controlar minhas 
 - matrícula e desafio TOTP;
 - gate obrigatório `aal2` para master;
 - tela acessível de conta e segurança;
-- seis testes unitários do contrato de identidade;
-- 50 testes backend, 21 frontend, skill válida e build aprovados;
+- sete testes unitários do contrato de identidade;
+- 50 testes backend, 22 frontend, skill válida e build aprovados;
 - identidade master nominal criada por convite no Supabase staging, fora de migration/seed;
 - perfil master ativado com vínculo exato à identidade Auth e provisionamento registrado em `audit_events`;
 - CI do incremento `1981c14` concluída com sucesso.
@@ -27,6 +27,8 @@ Como usuário convidado, quero entrar, recuperar minha senha e controlar minhas 
 - cadastro fechado por autorização prévia do master `aal2`, papel limitado a estudante/professor, expiração e consumo único;
 - RLS exclusiva do master sobre autorizações e auditoria de concessão, revogação e consumo;
 - `Before User Created Hook` oficial do Supabase, disponível no plano Free, bloqueando identidades não autorizadas antes de `auth.users`;
+- migração corretiva `20260723000200` aplicada em staging para restaurar as funções ausentes sem reescrever o histórico publicado;
+- `Before User Created Hook` habilitado no Supabase staging e vinculado a `public.hook_restrict_signup_to_grants`;
 - botão acessível “Entrar com Google” e teste unitário do redirecionamento OAuth.
 
 ## Evidência de decisão

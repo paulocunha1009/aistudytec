@@ -44,7 +44,10 @@ Fechar o AISTUDYTEC para uso exclusivo de pessoas credenciadas durante a fase de
 - tentativa Google após a revogação bloqueada pelo hook antes da criação da conta;
 - retorno OAuth `access_denied` traduzido para uma mensagem visível e a URL de erro removida;
 - 23 testes frontend e build de produção aprovados após o ajuste.
+- referências históricas da identidade convidada incorreta transferidas ao master verificado pela migração `20260723000600`;
+- identidade `paulohcordeiroic@gmail.com` removida do Supabase Auth após confirmação de que nunca havia entrado;
+- identidade correta `paulohcordeiroc@gmail.com` e conta de aluno mantidas e reconfirmadas na listagem do Auth.
 
-## Próximas validações integradas
+## Resultado
 
-- remover a identidade master incorreta anterior depois da validação completa.
+O incremento foi encerrado sem pendências funcionais conhecidas no controle de acesso privado. A próxima etapa do roadmap é a Sprint 10 — jornada docente em PostgreSQL.

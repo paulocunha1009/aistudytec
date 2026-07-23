@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { School } from 'lucide-react';
-import { api } from './api/client';
 import Sidebar from './components/Sidebar';
 import PrivateAccessPortal from './components/PrivateAccessPortal';
 import Toast from './components/Toast';
@@ -10,7 +8,7 @@ import Quiz from './components/student/Quiz';
 import ProgressView from './components/student/ProgressView';
 import TeacherPanel from './components/teacher/TeacherPanel';
 import AccessManagement from './components/master/AccessManagement';
-import { Button, Card, Input } from './design-system';
+import { Button, Card } from './design-system';
 import AuthDialog from './features/auth/AuthDialog';
 import MfaGate from './features/auth/MfaGate';
 import { useAuth } from './features/auth/AuthProvider';
@@ -26,7 +24,6 @@ const AISTUDYTECDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 768);
   const [toasts, setToasts] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [joinClassCode, setJoinClassCode] = useState('');
   const [activeTopic, setActiveTopic] = useState(null);
   const [quizMode, setQuizMode] = useState(false);
 
@@ -48,20 +45,6 @@ const AISTUDYTECDashboard = () => {
       await auth.logout(scope);
       setActiveTab('home');
       addToast(scope === 'global' ? 'Todas as sessões foram encerradas' : 'Sessão encerrada', 'success');
-    } catch (error) {
-      addToast(error.message, 'error');
-    }
-  };
-
-  const handleJoinClass = async () => {
-    if (!currentUser) {
-      setShowLoginModal(true);
-      return;
-    }
-    try {
-      const cls = await api.joinClass(apiUrl, joinClassCode);
-      setActiveTab('student-area');
-      addToast(`Entrou em: ${cls.name}`, 'success');
     } catch (error) {
       addToast(error.message, 'error');
     }
@@ -129,21 +112,7 @@ const AISTUDYTECDashboard = () => {
         )}
 
         {activeTab === 'student-area' && (
-          <div className="mx-auto max-w-2xl">
-            {!currentUser || !currentUser.data.classId ? (
-              <Card className="p-6 text-center shadow-lg sm:p-8">
-                <School size={64} className="mx-auto mb-4 text-slate-300" />
-                <h2 className="mb-2 text-2xl font-bold">Entrar na turma</h2>
-                <p className="mb-6 text-slate-500">Digite o código fornecido pelo professor.</p>
-                <div className="flex flex-col items-end gap-2 sm:flex-row">
-                  <Input label="Código da turma" className="flex-1 text-left font-mono uppercase" placeholder="CÓDIGO" value={joinClassCode} onChange={event => setJoinClassCode(event.target.value)} />
-                  <Button onClick={handleJoinClass}>Entrar</Button>
-                </div>
-              </Card>
-            ) : (
-              <ProgressView apiUrl={apiUrl} currentUser={currentUser} onOpenTopic={topic => { setActiveTopic(topic); setActiveTab('home'); }} onExplore={() => setActiveTab('home')} />
-            )}
-          </div>
+          <ProgressView currentUser={currentUser} onOpenTopic={topic => { setActiveTopic(topic); setActiveTab('home'); }} onExplore={() => setActiveTab('home')} />
         )}
 
         {activeTab === 'teacher' && (currentUser?.type === 'teacher' || currentUser?.type === 'master') && (

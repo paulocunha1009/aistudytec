@@ -1,6 +1,6 @@
 begin;
 
-select plan(6);
+select plan(9);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -66,6 +66,26 @@ select results_eq(
   $$ select count(*)::bigint from public.audit_events where action = 'quiz.completed' $$,
   array[0::bigint],
   'auditoria permanece invisível ao aluno'
+);
+
+select is(
+  (public.submit_published_topic_quiz(
+    '50000000-0000-0000-0000-000000000071',
+    '[{"questionId":"60000000-0000-0000-0000-000000000071","selectedOption":"A"},
+      {"questionId":"60000000-0000-0000-0000-000000000072","selectedOption":"B"}]'::jsonb
+  ) -> 'completedReviews' ->> 0),
+  'hardware',
+  'nova tentativa conclui a revisão anterior'
+);
+select results_eq(
+  $$ select count(*)::bigint from public.review_queue where status = 'pending' $$,
+  array[0::bigint],
+  'não reagenda revisão quando domínio acumulado chega a 70 por cento'
+);
+select results_eq(
+  $$ select mastery_pct from public.skill_mastery where skill = 'hardware' $$,
+  array[75],
+  'mapa acumula evidências das duas tentativas'
 );
 
 select set_config('request.jwt.claims',

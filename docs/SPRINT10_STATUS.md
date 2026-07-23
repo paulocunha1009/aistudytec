@@ -206,6 +206,30 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 
 ## Próximo incremento
 
-- conectar plano diário, fila de revisão e mapa de habilidades aos registros reais do Supabase;
 - oferecer ao professor indicadores agregados por turma e descritor sem expor respostas individuais indevidas;
 - homologar visualmente toda a jornada com uma conta real de aluno matriculado.
+
+## Incremento 9 — plano diário, revisões e mapa real
+
+- `ProgressView` deixou de consumir os endpoints legados de domínio, revisão e histórico;
+- mapa de habilidades lê `skill_mastery` diretamente do Supabase e filtra explicitamente pelo usuário da sessão;
+- linha do tempo usa tentativas concluídas de `quiz_attempts`, vinculadas ao título real do tópico;
+- plano diário apresenta somente revisões pendentes já vencidas e oferece continuidade pelo último tópico estudado;
+- abertura de uma atividade reutiliza o contrato seguro de tópico publicado;
+- fluxo antigo de entrada em turma por código foi removido da jornada privada;
+- matrícula passa a ser exclusivamente aquela autorizada pelo professor ou master;
+- habilidades com domínio acumulado abaixo de 70% geram revisão para três dias;
+- uma nova tentativa na habilidade conclui a revisão pendente anterior;
+- ao atingir 70% ou mais, a habilidade não recebe uma nova revisão;
+- índice parcial garante no máximo uma revisão pendente por aluno e habilidade, preservando o histórico resolvido;
+- duplicidades legadas são resolvidas de forma não destrutiva durante a migration;
+- migração `20260723001900_student_review_cycle.sql` aplicada no staging;
+- lint remoto do schema aprovado sem erros;
+- onze suítes e 44 testes frontend aprovados;
+- build de produção aprovado.
+
+## Próximo incremento
+
+- migrar os indicadores docentes de intervenção para tentativas, revisões e habilidades reais do Supabase;
+- agregar sinais por turma, aluno e descritor com isolamento RLS;
+- homologar visualmente a jornada completa usando uma conta real de aluno.

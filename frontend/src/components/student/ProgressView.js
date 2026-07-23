@@ -1,46 +1,39 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock3, History, Map, RefreshCw, Sparkles, Target } from 'lucide-react';
-import { api } from '../../api/client';
 import { Badge, Button, Card, EmptyState, ErrorState, Progress, Skeleton } from '../../design-system';
 import { buildProgressModel, STAGE_META } from '../../features/progress/progressModel';
+import { loadStudentProgress, openProgressTopic } from '../../features/progress/progressService';
 
-const ProgressView = ({ apiUrl, currentUser, onOpenTopic, onExplore }) => {
+const ProgressView = ({ currentUser, onOpenTopic, onExplore }) => {
   const [mastery, setMastery] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [history, setHistory] = useState([]);
   const [loadState, setLoadState] = useState('loading');
   const [openingId, setOpeningId] = useState(null);
-  const userId = currentUser?.data?.id;
+  const studentId = currentUser?.data?.id;
 
   const load = () => {
-    if (!userId) { setLoadState('ready'); return; }
     setLoadState('loading');
-    Promise.all([
-      api.skillMastery(apiUrl, userId),
-      api.reviewQueue(apiUrl, userId, true),
-      api.history(apiUrl, { userId }),
-    ]).then(([masteryData, reviewData, historyData]) => {
-      setMastery(masteryData);
-      setReviews(reviewData);
-      setHistory(historyData);
+    loadStudentProgress(studentId).then(data => {
+      setMastery(data.mastery);
+      setReviews(data.reviews);
+      setHistory(data.history);
       setLoadState('ready');
     }).catch(() => setLoadState('error'));
   };
 
-  useEffect(load, [apiUrl, userId]);
+  useEffect(load, [studentId]);
   const model = useMemo(() => buildProgressModel({ mastery, reviews, history }), [mastery, reviews, history]);
 
   const openPlanItem = async (item) => {
     if (!item.topicId) { onExplore(); return; }
     setOpeningId(item.id);
-    try { onOpenTopic(await api.getTopic(apiUrl, item.topicId)); }
+    try { onOpenTopic(await openProgressTopic(item.topicId)); }
     finally { setOpeningId(null); }
   };
 
   if (loadState === 'loading') return <Skeleton lines={7} label="Carregando seu progresso" className="mx-auto max-w-5xl pt-8" />;
   if (loadState === 'error') return <ErrorState title="Não foi possível carregar seu progresso" onRetry={load} className="mx-auto max-w-xl" />;
-
-  if (!userId) return <EmptyState title="Seu progresso começa no primeiro quiz" description="Identifique-se antes do quiz para registrar habilidades, revisões e histórico." action={<Button onClick={onExplore}>Explorar um tema</Button>} />;
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 pb-10">

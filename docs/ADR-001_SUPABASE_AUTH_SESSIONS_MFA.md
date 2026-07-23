@@ -9,14 +9,17 @@ A baseline Flask mantém login e sessão próprios para preservar o protótipo d
 ## Decisão
 
 - o frontend usa `@supabase/supabase-js` com PKCE, persistência de sessão, refresh automático e detecção de retorno por URL;
-- login definitivo usa e-mail e senha do Supabase Auth, sem chamar `/api/login`;
+- login online preferencial usa Google OAuth pelo Supabase Auth, sem depender de SMTP, domínio próprio ou `/api/login`;
+- e-mail/senha permanece compatibilidade transitória até o corte, sem cadastro público;
 - o perfil público fornece papel e estado, mas nunca concede privilégios sem JWT válido e RLS;
 - contas `invited`, `locked` ou `disabled` não entram na aplicação;
 - recuperação usa `resetPasswordForEmail` e `updateUser`; mensagens não revelam se o e-mail existe;
 - logout local encerra o dispositivo atual; logout global revoga as demais sessões suportadas pelo Supabase;
 - master só visualiza a aplicação após sessão `aal2`;
 - TOTP é matriculado e verificado pelos métodos MFA nativos;
-- professor e estudante entram apenas por convite controlado; não há cadastro público;
+- professor e estudante entram somente após autorização prévia do master em `aal2`; não há cadastro público;
+- a autorização registra e-mail normalizado, papel sem `master`, validade e consumo único;
+- o trigger de criação do perfil rejeita qualquer identidade OAuth sem autorização pendente válida;
 - a sessão Flask permanece somente como compatibilidade das jornadas acadêmicas ainda não migradas e não é fallback de identidade para produção.
 
 ## Recuperação de MFA
@@ -27,7 +30,7 @@ O Supabase Auth não oferece códigos de recuperação TOTP. Portanto, o requisi
 
 - a chave publishable pode estar no frontend; `service_role` permanece exclusivamente server-side;
 - Sprints 10–13 devem migrar dados e operações legadas para que o token Supabase seja a única identidade em produção;
-- convites, alteração de papel/estado e recuperação administrativa exigem Edge Function com validação master `aal2` e auditoria;
+- autorização de cadastro, alteração de papel/estado e recuperação administrativa exigem master `aal2` e auditoria;
 - links de recuperação dependem de Site URL/Redirect URLs corretas e de entrega de e-mail validada em staging.
 
 ## Rollback
@@ -38,5 +41,5 @@ Antes do corte de produção, o frontend pode reverter este incremento sem alter
 
 - https://supabase.com/docs/guides/auth
 - https://supabase.com/docs/guides/auth/auth-mfa/totp
+- https://supabase.com/docs/guides/auth/social-login/auth-google
 - https://supabase.com/docs/reference/javascript/auth-mfa
-

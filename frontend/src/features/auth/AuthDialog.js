@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Dialog, Input } from '../../design-system';
-import { requestPasswordRecovery, signIn, updatePassword } from './authService';
+import { requestPasswordRecovery, signIn, signInWithGoogle, updatePassword } from './authService';
 
 const AuthDialog = ({ open, recoveryMode, onAuthenticated, onClose, onRecoveryComplete }) => {
   const [mode, setMode] = useState(recoveryMode ? 'update' : 'login');
@@ -40,6 +40,18 @@ const AuthDialog = ({ open, recoveryMode, onAuthenticated, onClose, onRecoveryCo
     }
   };
 
+  const enterWithGoogle = async () => {
+    setError('');
+    setMessage('');
+    setBusy(true);
+    try {
+      await signInWithGoogle();
+    } catch (nextError) {
+      setError(nextError.message);
+      setBusy(false);
+    }
+  };
+
   const title = mode === 'login' ? 'Entrar no AISTUDYTEC' : mode === 'recover' ? 'Recuperar acesso' : 'Criar nova senha';
   return (
     <Dialog
@@ -54,6 +66,19 @@ const AuthDialog = ({ open, recoveryMode, onAuthenticated, onClose, onRecoveryCo
       </>}
     >
       <div className="space-y-4">
+        {mode === 'login' && <>
+          <Button type="button" variant="secondary" className="w-full" disabled={busy} onClick={enterWithGoogle}>
+            Entrar com Google
+          </Button>
+          <p className="text-sm text-slate-600">
+            O acesso só é liberado quando seu e-mail foi autorizado previamente pelo administrador.
+          </p>
+          <div className="flex items-center gap-3" aria-hidden="true">
+            <span className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">ou</span>
+            <span className="h-px flex-1 bg-slate-200" />
+          </div>
+        </>}
         {mode !== 'update' && <Input label="E-mail" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} />}
         {mode !== 'recover' && <Input label={mode === 'update' ? 'Nova senha' : 'Senha'} type="password" autoComplete={mode === 'update' ? 'new-password' : 'current-password'} required value={password} onChange={event => setPassword(event.target.value)} />}
         {mode === 'update' && <Input label="Confirmar nova senha" type="password" autoComplete="new-password" required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} />}

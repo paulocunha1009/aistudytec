@@ -48,6 +48,8 @@ TOTP é o primeiro fator adicional, com segredo gerido pelo Supabase Auth e fora
 
 ### Recuperação e convite
 
+Enquanto não houver domínio e SMTP transacional, o acesso online usa Google OAuth. O master em sessão `aal2` autoriza previamente o e-mail e o papel; a autorização expira, é consumida uma única vez e nunca concede o papel `master`. Uma identidade OAuth sem autorização válida é rejeitada no banco, não apenas escondida pela interface.
+
 Tokens de convite, definição e recuperação de senha são aleatórios, de uso único, expiram e ficam armazenados somente como hash. A resposta pública é neutra. O envio de e-mail depende de provedor transacional aprovado; em desenvolvimento, o token pode ser capturado somente por adaptador de teste, nunca por log de produção.
 
 ### Defesa contra abuso

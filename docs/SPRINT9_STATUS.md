@@ -23,6 +23,10 @@ Como usuário convidado, quero entrar, recuperar minha senha e controlar minhas 
 - identidade master nominal criada por convite no Supabase staging, fora de migration/seed;
 - perfil master ativado com vínculo exato à identidade Auth e provisionamento registrado em `audit_events`;
 - CI do incremento `1981c14` concluída com sucesso.
+- modelo de acesso online definido com Google OAuth, sem dependência de SMTP;
+- cadastro fechado por autorização prévia do master `aal2`, papel limitado a estudante/professor, expiração e consumo único;
+- RLS exclusiva do master sobre autorizações e auditoria de concessão, revogação e consumo;
+- botão acessível “Entrar com Google” e teste unitário do redirecionamento OAuth.
 
 ## Evidência de decisão
 
@@ -30,10 +34,10 @@ Como usuário convidado, quero entrar, recuperar minha senha e controlar minhas 
 
 ## Pendente para encerrar a sprint
 
-- Edge Function de convite controlado e administração de papel/estado;
+- console/Edge Function para o master criar e revogar autorizações;
 - auditoria server-side das próximas ações administrativas;
-- configurar Site URL, Redirect URLs e remetente de e-mail em staging;
-- concluir o convite master e definir a senha pelo fluxo recebido por e-mail;
+- configurar Google OAuth, Site URL e Redirect URLs em staging;
+- vincular a identidade Google nominal do master ao perfil existente;
 - matricular TOTP real e confirmar `aal2`;
-- teste real de confirmação e recuperação por e-mail;
+- teste real de login Google autorizado e tentativa não autorizada;
 - testes de sessão expirada, revogação e escalada de papel no ambiente integrado.

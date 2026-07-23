@@ -45,6 +45,23 @@ export const signIn = async ({ email, password }) => {
   return { session: data.session, identity };
 };
 
+export const signInWithGoogle = async () => {
+  const client = requireSupabase();
+  const redirectTo = `${window.location.origin}${window.location.pathname}`;
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'select_account',
+      },
+    },
+  });
+  if (error) throw new Error(authErrorMessage(error, 'Não foi possível iniciar o acesso com Google.'));
+  return data;
+};
+
 export const requestPasswordRecovery = async (email) => {
   const client = requireSupabase();
   const redirectTo = `${window.location.origin}${window.location.pathname}`;
@@ -93,4 +110,3 @@ export const verifyTotp = async ({ factorId, code }) => {
   const { error } = await client.auth.mfa.verify({ factorId, challengeId: challenge.id, code: code.trim() });
   if (error) throw new Error('Código inválido ou expirado. Confira o aplicativo e tente novamente.');
 };
-

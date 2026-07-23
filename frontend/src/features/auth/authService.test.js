@@ -3,6 +3,7 @@ import {
   loadIdentity,
   requestPasswordRecovery,
   signIn,
+  signInWithGoogle,
   verifyTotp,
 } from './authService';
 import { requireSupabase } from '../../lib/supabase';
@@ -57,6 +58,21 @@ describe('authService', () => {
 
     await expect(signIn({ email: 'ana@test.invalid', password: 'segredo-seguro' })).rejects.toThrow('ainda não está ativa');
     expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+
+  test('Google OAuth retorna à origem e exige seleção explícita da conta', async () => {
+    const signInWithOAuth = jest.fn().mockResolvedValue({ data: { provider: 'google' }, error: null });
+    requireSupabase.mockReturnValue({ auth: { signInWithOAuth } });
+
+    await signInWithGoogle();
+
+    expect(signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: expect.objectContaining({
+        redirectTo: expect.stringContaining(window.location.origin),
+        queryParams: { access_type: 'offline', prompt: 'select_account' },
+      }),
+    });
   });
 
   test('recuperação usa retorno na própria origem', async () => {

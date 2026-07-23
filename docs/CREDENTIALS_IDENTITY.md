@@ -44,7 +44,7 @@ Supabase Auth emitirá access token curto e refresh token rotativo, mantendo as 
 
 ### MFA
 
-TOTP é o primeiro fator adicional, com segredo criptografado fora de logs e códigos de recuperação armazenados como hash. MFA é obrigatório para `master`, recomendado para professor e opcional para estudante. WebAuthn/passkeys é a evolução preferencial após validação de domínio HTTPS e suporte dos dispositivos do piloto.
+TOTP é o primeiro fator adicional, com segredo gerido pelo Supabase Auth e fora de logs. MFA é obrigatório para `master`, recomendado para professor e opcional para estudante. O Supabase não oferece códigos de recuperação TOTP; recuperação usa segundo fator verificado e procedimento administrativo auditado. WebAuthn/passkeys é a evolução preferencial após validação de domínio HTTPS e suporte dos dispositivos do piloto.
 
 ### Recuperação e convite
 
@@ -76,7 +76,7 @@ Não registrar senha, token, segredo TOTP, código de recuperação, conteúdo d
 2. Aplicar política, normalização, bloqueio temporário e rehash oportunista mantendo o login atual compatível.
 3. Substituir a sessão assinada autocontida por sessão opaca revogável e adicionar CSRF.
 4. Entregar gestão de sessões, troca e recuperação de senha.
-5. Entregar TOTP e códigos de recuperação; tornar MFA obrigatório para `master`.
+5. Entregar TOTP, segundo fator de recuperação e procedimento administrativo auditado; tornar MFA obrigatório para `master`.
 6. Centralizar permissões, console administrativo e testes E2E negativos.
 7. Remover compatibilidades antigas somente após migração observada e backup validado.
 

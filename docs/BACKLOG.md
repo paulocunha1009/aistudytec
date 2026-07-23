@@ -32,7 +32,7 @@ Critérios: migração sem perda de contas; bootstrap de uso único; master com 
 
 Dependências: definição de provedor de e-mail para recuperação externa; HTTPS estável para evolução WebAuthn; armazenamento compartilhado antes de escalar horizontalmente.
 
-Status: fundação PostgreSQL/RLS e CI concluídos na Sprint 7. Continuação priorizada nas Sprints 8–15, começando por staging e testes RLS por persona.
+Status: fundação PostgreSQL/RLS e CI concluídos; Sprint 8 encerrada. Na Sprint 9, login Supabase/PKCE, recuperação, logout local/global e gate TOTP `aal2` do master foram implementados no frontend. Permanecem convite administrativo, auditoria server-side, configuração de e-mail e validação integrada real.
 
 ### PB-003 Decidir ano escolar do aluno — 3 pontos
 

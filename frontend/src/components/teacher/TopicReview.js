@@ -60,7 +60,29 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
   };
 
   const approveVideo = async (video) => {
-    try { await setVideoApproval({ videoId: video.id, approved: !video.approved }); load(); } catch (e) { addToast(e.message, 'error'); }
+    const approved = !video.approved;
+    setTopic(current => ({
+      ...current,
+      videos: {
+        ...current.videos,
+        [video.level]: current.videos[video.level].map(item =>
+          item.id === video.id ? { ...item, approved } : item),
+      },
+    }));
+    try {
+      await setVideoApproval({ videoId: video.id, approved });
+      addToast(approved ? 'Vídeo aprovado para este nível.' : 'Aprovação do vídeo removida.', 'success');
+    } catch (e) {
+      setTopic(current => ({
+        ...current,
+        videos: {
+          ...current.videos,
+          [video.level]: current.videos[video.level].map(item =>
+            item.id === video.id ? { ...item, approved: video.approved } : item),
+        },
+      }));
+      addToast(e.message, 'error');
+    }
   };
 
   const regenerate = async (part) => {
@@ -206,11 +228,19 @@ const TopicReview = ({ topicId, onBack, addToast }) => {
               <p className="text-xs font-bold text-slate-400 uppercase mb-2">{l.label}</p>
               <div className="space-y-2">
                 {(topic.videos?.[l.key] || []).map(v => (
-                  <button key={v.id} onClick={() => approveVideo(v)} className={`w-full text-left p-2 border rounded-lg flex items-center gap-2 ${v.approved ? 'border-green-500 bg-green-50' : ''}`}>
-                    <Youtube className="text-red-500 shrink-0" size={18} />
-                    <span className="text-xs line-clamp-2 flex-1">{v.title}</span>
-                    {v.approved && <CheckCircle2 className="text-green-500 shrink-0" size={16} />}
-                  </button>
+                  <div key={v.id} className={`rounded-lg border p-2 ${v.approved ? 'border-green-500 bg-green-50' : 'border-slate-200'}`}>
+                    <a href={`https://www.youtube.com/watch?v=${v.youtube_video_id}`} target="_blank" rel="noreferrer"
+                      className="flex items-center gap-2 rounded-md p-1 text-left hover:bg-white"
+                      title="Abrir vídeo no YouTube em uma nova aba">
+                      <Youtube className="shrink-0 text-red-500" size={18} />
+                      <span className="line-clamp-2 flex-1 text-xs font-semibold text-slate-700">{v.title}</span>
+                      <ExternalLink className="shrink-0 text-slate-400" size={14} />
+                    </a>
+                    <button type="button" onClick={() => approveVideo(v)}
+                      className={`mt-2 flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-xs font-bold ${v.approved ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                      <CheckCircle2 size={14} /> {v.approved ? 'Aprovado — remover' : 'Aprovar vídeo'}
+                    </button>
+                  </div>
                 ))}
                 {(!topic.videos?.[l.key] || topic.videos[l.key].length === 0) && <p className="text-xs text-slate-300">Nenhum candidato</p>}
               </div>

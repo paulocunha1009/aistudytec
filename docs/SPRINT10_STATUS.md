@@ -162,3 +162,12 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 - exibir descritor e competência em cada questão na curadoria;
 - homologar a publicação final com decisão explícita do professor;
 - migrar a leitura do aluno e o quiz remanescentes para Supabase.
+
+## Ajuste de experiência — curadoria de vídeos
+
+- cada candidato é um link real para `youtube.com/watch`, compatível com botão direito e abertura em nova aba;
+- aprovação e remoção de aprovação usam atualização otimista;
+- somente o cartão alterado é atualizado, sem recarregar o tópico;
+- posição de rolagem, textos em edição e contexto visual são preservados;
+- em caso de falha no banco, o cartão retorna ao estado anterior e apresenta erro;
+- homologado visualmente com o tópico publicado da turma piloto.

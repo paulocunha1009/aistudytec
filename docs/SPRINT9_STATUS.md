@@ -26,6 +26,7 @@ Como usuário convidado, quero entrar, recuperar minha senha e controlar minhas 
 - modelo de acesso online definido com Google OAuth, sem dependência de SMTP;
 - cadastro fechado por autorização prévia do master `aal2`, papel limitado a estudante/professor, expiração e consumo único;
 - RLS exclusiva do master sobre autorizações e auditoria de concessão, revogação e consumo;
+- `Before User Created Hook` oficial do Supabase, disponível no plano Free, bloqueando identidades não autorizadas antes de `auth.users`;
 - botão acessível “Entrar com Google” e teste unitário do redirecionamento OAuth.
 
 ## Evidência de decisão

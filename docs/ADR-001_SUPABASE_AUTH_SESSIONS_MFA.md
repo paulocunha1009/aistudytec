@@ -19,7 +19,8 @@ A baseline Flask mantém login e sessão próprios para preservar o protótipo d
 - TOTP é matriculado e verificado pelos métodos MFA nativos;
 - professor e estudante entram somente após autorização prévia do master em `aal2`; não há cadastro público;
 - a autorização registra e-mail normalizado, papel sem `master`, validade e consumo único;
-- o trigger de criação do perfil rejeita qualquer identidade OAuth sem autorização pendente válida;
+- o `Before User Created Hook` oficial rejeita qualquer identidade OAuth sem autorização pendente válida antes de criar `auth.users`;
+- após a criação autorizada, um trigger de perfil consome a autorização e aplica papel/estado;
 - a sessão Flask permanece somente como compatibilidade das jornadas acadêmicas ainda não migradas e não é fallback de identidade para produção.
 
 ## Recuperação de MFA

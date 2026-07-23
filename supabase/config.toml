@@ -49,5 +49,8 @@ uri = "pg-functions://postgres/public/hook_restrict_signup_to_grants"
 enabled = true
 policy = "per_worker"
 
+[functions.generate-topic]
+verify_jwt = false
+
 [analytics]
 enabled = false

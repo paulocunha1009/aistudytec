@@ -1,0 +1,144 @@
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+const levels = ['simple', 'technical', 'advanced'];
+
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+});
+
+const geminiRequest = async (apiKey: string, body: unknown) => {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+  );
+  if (!response.ok) throw new Error(`Gemini respondeu ${response.status}`);
+  return response.json();
+};
+
+const parseDuration = (value: string) => {
+  const match = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(value || '');
+  if (!match) return 0;
+  return Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0);
+};
+
+const youtubeVideos = async (apiKey: string | undefined, title: string) => {
+  if (!apiKey) return [];
+  const output: Record<string, unknown>[] = [];
+  for (const level of levels) {
+    const query = encodeURIComponent(`${title} ${level === 'simple' ? 'explicação simples' : level === 'technical' ? 'aula completa' : 'aprofundado'} ensino médio`);
+    const search = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&part=snippet&type=video&safeSearch=strict&relevanceLanguage=pt&maxResults=8&q=${query}`).then(r => r.json());
+    const ids = (search.items || []).map((item: any) => item.id?.videoId).filter(Boolean);
+    if (!ids.length) continue;
+    const details = await fetch(`https://www.googleapis.com/youtube/v3/videos?key=${apiKey}&part=snippet,contentDetails,statistics&id=${ids.join(',')}`).then(r => r.json());
+    let orderIndex = 0;
+    for (const item of details.items || []) {
+      const duration = parseDuration(item.contentDetails?.duration);
+      if (duration < 180 || duration > 1200) continue;
+      output.push({
+        level,
+        youtubeVideoId: item.id,
+        title: item.snippet.title,
+        channelTitle: item.snippet.channelTitle,
+        durationSeconds: duration,
+        viewCount: Number(item.statistics?.viewCount || 0),
+        thumbnailUrl: item.snippet.thumbnails?.medium?.url,
+        rankScore: Number(item.statistics?.viewCount || 0),
+        orderIndex: orderIndex++,
+      });
+      if (orderIndex === 3) break;
+    }
+  }
+  return output;
+};
+
+Deno.serve(async req => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method !== 'POST') return json({ error: 'Método não permitido' }, 405);
+
+  try {
+    const authorization = req.headers.get('Authorization');
+    if (!authorization) return json({ error: 'Sessão obrigatória' }, 401);
+
+    const url = Deno.env.get('SUPABASE_URL')!;
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const geminiKey = Deno.env.get('GEMINI_API_KEY');
+    if (!geminiKey) return json({ error: 'Gemini não configurado no servidor' }, 503);
+
+    const userClient = createClient(url, anonKey, {
+      global: { headers: { Authorization: authorization } },
+    });
+    const admin = createClient(url, serviceKey);
+    const { data: authData, error: authError } = await userClient.auth.getUser();
+    if (authError || !authData.user) return json({ error: 'Sessão inválida' }, 401);
+
+    const { topicId } = await req.json();
+    const { data: topic, error: topicError } = await userClient.from('topics').select(`
+      id, class_id, title, target_grade,
+      topic_curriculum_descriptors(
+        curriculum_descriptors(code, description, curriculum_competencies(code, description))
+      )
+    `).eq('id', topicId).single();
+    if (topicError || !topic) return json({ error: 'Tópico não encontrado' }, 404);
+    const { data: canManage } = await userClient.rpc('can_manage_class', { target_class_id: topic.class_id });
+    if (!canManage) return json({ error: 'Sem permissão para gerar este tópico' }, 403);
+
+    const descriptors = (topic.topic_curriculum_descriptors || [])
+      .map((link: any) => link.curriculum_descriptors).filter(Boolean);
+    const descriptorText = descriptors.map((item: any) =>
+      `${item.code}: ${item.description} | competência ${item.curriculum_competencies?.code}: ${item.curriculum_competencies?.description}`
+    ).join('\n');
+
+    const research = await geminiRequest(geminiKey, {
+      contents: [{ parts: [{ text: `Pesquise evidências verificáveis para produzir material didático sobre "${topic.title}", alinhado aos descritores abaixo.\n${descriptorText}\nPriorize universidades, institutos federais, órgãos públicos, documentação técnica primária e jornalismo de grande prestígio. Não invente fatos, números ou referências. Produza uma síntese factual em português.` }] }],
+      tools: [{ google_search: {} }],
+      generationConfig: { temperature: 0.2, maxOutputTokens: 5000 },
+    });
+    const candidate = research.candidates?.[0];
+    const researchText = candidate?.content?.parts?.map((part: any) => part.text || '').join('\n') || '';
+    const chunks = candidate?.groundingMetadata?.groundingChunks || [];
+    const sources = chunks.map((chunk: any) => chunk.web).filter(Boolean).map((web: any) => {
+      const parsed = new URL(web.uri);
+      return { title: web.title || parsed.hostname, url: web.uri, domain: parsed.hostname };
+    }).filter((item: any, index: number, list: any[]) => list.findIndex(other => other.url === item.url) === index);
+
+    const contentResponse = await geminiRequest(geminiKey, {
+      contents: [{ parts: [{ text: `Você é especialista em educação profissional brasileira. Gere SOMENTE JSON válido para o tópico "${topic.title}", ano ${topic.target_grade}.
+Use exclusivamente a pesquisa fundamentada abaixo como base factual:
+${researchText}
+
+Descritores obrigatórios:
+${descriptorText}
+
+Estrutura:
+{"explanations":{"simple":"mínimo 500 caracteres","technical":"mínimo 700 caracteres","advanced":"mínimo 900 caracteres"},"learningPaths":{"simple":{},"technical":{},"advanced":{}},"questions":[]}
+
+Cada learningPath deve conter: hook (string), objectives (2-4 strings), keyIdeas (3-5 strings), realWorldConnection (string), guidedInvestigation {question, steps com 3 itens, searchTerms com 2-4 itens}, watchMission {before,during,after}, handsOnChallenge {title,instructions,deliverable}, reflectionQuestions (2-3 strings), discussionPrompt (string).
+Gere exatamente 9 questões com question, options (4 alternativas), correctOption (A-D), explanation (feedback detalhado), skill, difficulty (facil|medio|dificil) e descriptorCode. Cada descriptorCode deve ser um dos códigos fornecidos. Distribua as questões entre os descritores. Não invente fontes, links ou estatísticas.` }] }],
+      generationConfig: { responseMimeType: 'application/json', temperature: 0.35, maxOutputTokens: 20000 },
+    });
+    const text = contentResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+    const content = JSON.parse(text);
+    if (!content.questions || content.questions.length !== 9) throw new Error('Gemini retornou quantidade inválida de questões');
+    const allowedCodes = new Set(descriptors.map((item: any) => item.code));
+    if (content.questions.some((item: any) => !allowedCodes.has(item.descriptorCode))) {
+      throw new Error('Gemini retornou descritor fora do tópico');
+    }
+
+    const videos = await youtubeVideos(Deno.env.get('YOUTUBE_API_KEY'), topic.title);
+    const { error: storeError } = await admin.rpc('store_generated_topic_content', {
+      p_topic_id: topicId,
+      p_payload: { ...content, sources, videos },
+    });
+    if (storeError) throw storeError;
+    return json({ status: 'generated', sourceCount: sources.length, videoCount: videos.length });
+  } catch (error) {
+    console.error(error);
+    return json({ error: error instanceof Error ? error.message : 'Falha na geração' }, 500);
+  }
+});

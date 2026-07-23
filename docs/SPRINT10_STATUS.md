@@ -113,8 +113,32 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 - build de produção aprovado;
 - testes pgTAP `008_curriculum_guided_topics.test.sql` e `009_teacher_delegated_student_access.test.sql` adicionados.
 
+## Incremento 5 — geração fundamentada e gate docente
+
+- revisão e edição migradas do Flask/SQLite para Supabase;
+- Edge Function autenticada `generate-topic` publicada;
+- chaves Gemini e YouTube armazenadas somente no cofre server-side;
+- pesquisa Gemini fundamentada com Google Search antes da geração;
+- fontes do grounding preservadas em `topic_sources`;
+- geração restrita aos descritores e competências do tópico;
+- três explicações e três trilhas imersivas estruturadas;
+- nove questões com habilidade, feedback, dificuldade, gabarito privado e descritor;
+- vídeos do YouTube entram como candidatos não aprovados;
+- publicação exige explicações detalhadas, trilhas completas, oito ou mais questões e um vídeo aprovado por nível;
+- versão, revisor, data e auditoria são registrados na publicação.
+
+### Homologação real
+
+- tópico: `Fundamentos de hardware e segurança digital`;
+- turma: `Turma Piloto — Técnico em Informática`;
+- descritores: D01, D03 e D11;
+- resultado: status `generated`, três níveis preenchidos e nove questões;
+- gate validado: publicação bloqueada até aprovação de um vídeo por nível;
+- nenhum conteúdo foi liberado ao aluno sem curadoria docente.
+
 ## Próximo incremento
 
-- seleção de descritores por questão;
-- geração orientada pelo blueprint;
-- preview e gate de publicação docente.
+- exibir fontes fundamentadas na tela de curadoria e na experiência do aluno;
+- aprimorar ranking e diversidade dos vídeos;
+- adicionar checklist visual do gate antes da confirmação;
+- homologar edição completa e publicação docente.

@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Youtube, CheckCircle2, RefreshCw, Send, Trash2, Loader2, AlertCircle } from 'lucide-react';
-import { api } from '../../api/client';
 import { Badge, Button, Card, ConfirmDialog, ErrorState, Skeleton } from '../../design-system';
+import {
+  deleteTopicQuestion,
+  generateTopicContent,
+  getTopicReview,
+  publishTopic,
+  saveTopicExplanation,
+  saveTopicQuestion,
+  setVideoApproval,
+} from '../../features/topics/topicReviewService';
 
 const LEVELS = [
   { key: 'simple', label: 'Simples' },
@@ -9,7 +17,7 @@ const LEVELS = [
   { key: 'advanced', label: 'Avançado' },
 ];
 
-const TopicReview = ({ apiUrl, topicId, onBack, addToast }) => {
+const TopicReview = ({ topicId, onBack, addToast }) => {
   const [topic, setTopic] = useState(null);
   const [busy, setBusy] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle');
@@ -19,10 +27,10 @@ const TopicReview = ({ apiUrl, topicId, onBack, addToast }) => {
 
   const load = () => {
     setLoadState('loading');
-    api.getTopic(apiUrl, topicId).then(data => { setTopic(data); setLoadState('ready'); }).catch(e => { setLoadState('error'); addToast(e.message, 'error'); });
+    getTopicReview(topicId).then(data => { setTopic(data); setLoadState('ready'); }).catch(e => { setLoadState('error'); addToast(e.message, 'error'); });
   };
 
-  useEffect(() => { load(); }, [apiUrl, topicId]);
+  useEffect(() => { load(); }, [topicId]);
 
   const persist = async (operation) => {
     setPendingSaves(count => count + 1);
@@ -39,31 +47,38 @@ const TopicReview = ({ apiUrl, topicId, onBack, addToast }) => {
     }
   };
 
-  const saveExplanation = (level, content) => persist(() => api.updateExplanation(apiUrl, topicId, level, content));
+  const saveExplanation = (level, content) => persist(() => saveTopicExplanation({ topicId, level, content }));
 
   const saveQuestion = async (qid, patch) => {
-    try { await persist(() => api.updateQuestion(apiUrl, topicId, qid, patch)); } catch (_) { /* toast em persist */ }
+    try { await persist(() => saveTopicQuestion({ questionId: qid, patch })); } catch (_) { /* toast em persist */ }
   };
 
   const removeQuestion = async (qid) => {
     setBusy(true);
-    try { await api.deleteQuestion(apiUrl, topicId, qid); setConfirmation(null); addToast('Questão excluída', 'success'); load(); } catch (e) { addToast(e.message, 'error'); } finally { setBusy(false); }
+    try { await deleteTopicQuestion(qid); setConfirmation(null); addToast('Questão excluída', 'success'); load(); } catch (e) { addToast(e.message, 'error'); } finally { setBusy(false); }
   };
 
   const approveVideo = async (vid) => {
-    try { await api.approveVideo(apiUrl, topicId, vid, true); load(); } catch (e) { addToast(e.message, 'error'); }
+    try { await setVideoApproval({ videoId: vid, approved: true }); load(); } catch (e) { addToast(e.message, 'error'); }
   };
 
   const regenerate = async (part) => {
     setBusy(true);
-    try { await api.regenerateTopic(apiUrl, topicId, part); addToast('Regenerado', 'success'); load(); }
-    catch (e) { addToast(e.message, 'error'); } finally { setBusy(false); }
+    try {
+      await generateTopicContent({ topicId, part });
+      addToast('Material gerado. Revise tudo antes de publicar.', 'success');
+      load();
+    } catch (e) {
+      addToast(e.message, 'error');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const publish = async () => {
     setBusy(true);
     try {
-      await api.publishTopic(apiUrl, topicId);
+      await publishTopic(topicId);
       setConfirmation(null);
       addToast('Tópico publicado para a turma!', 'success');
       load();

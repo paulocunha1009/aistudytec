@@ -1,10 +1,7 @@
 begin;
 
-select plan(10);
+select plan(11);
 
-set local role supabase_auth_admin;
-alter table auth.users disable trigger on_auth_user_created;
-reset role;
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_user_meta_data, raw_app_meta_data, created_at, updated_at
@@ -20,38 +17,17 @@ insert into auth.users (
   now(),
   now()
 );
-set local role supabase_auth_admin;
-alter table auth.users enable trigger on_auth_user_created;
-reset role;
 
-insert into public.profiles (id, role, status, name, email)
-values (
-  '30000000-0000-0000-0000-000000000009',
-  'master',
-  'active',
-  'Master Cadastro',
-  'master-registration@test.invalid'
-);
+update public.profiles
+set role = 'master', status = 'active'
+where id = '30000000-0000-0000-0000-000000000009';
 
-select throws_ok(
-  $$ insert into auth.users (
-       id, aud, role, email, encrypted_password, email_confirmed_at,
-       raw_user_meta_data, raw_app_meta_data, created_at, updated_at
-     ) values (
-       '10000000-0000-0000-0000-000000000009',
-       'authenticated',
-       'authenticated',
-       'unauthorized@test.invalid',
-       '',
-       now(),
-       '{}',
-       '{}',
-       now(),
-       now()
-     ) $$,
-  'P0001',
+select is(
+  public.hook_restrict_signup_to_grants(
+    '{"user":{"email":"unauthorized@test.invalid"}}'::jsonb
+  ) #>> '{error,code}',
   'access_not_authorized',
-  'cadastro sem autorização prévia é rejeitado'
+  'hook rejeita cadastro sem autorização prévia'
 );
 
 set local role authenticated;
@@ -92,6 +68,14 @@ select results_eq(
      where email = 'student-approved@test.invalid' and status = 'pending' $$,
   array[1::bigint],
   'master aal2 cria autorização pendente'
+);
+
+select is(
+  public.hook_restrict_signup_to_grants(
+    '{"user":{"email":"STUDENT-APPROVED@test.invalid"}}'::jsonb
+  ),
+  '{}'::jsonb,
+  'hook aceita e-mail previamente autorizado sem diferenciar maiúsculas'
 );
 
 insert into auth.users (

@@ -24,8 +24,8 @@ select policies_are(
 select policies_are(
   'public',
   'access_grants',
-  array['access_grants_master_all'],
-  'autorizações são administradas somente pela policy master'
+  array['access_grants_auth_hook_select', 'access_grants_master_all'],
+  'autorizações têm leitura do hook e administração master'
 );
 select is_empty(
   $$ select id from public.profiles where role = 'master' $$,

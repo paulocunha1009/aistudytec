@@ -70,54 +70,61 @@ create trigger access_grants_audit_change
 after insert or update on public.access_grants
 for each row execute function public.audit_access_grant_change();
 
-create or replace function public.handle_new_auth_user()
+create or replace function public.hook_restrict_signup_to_grants(event jsonb)
+returns jsonb
+language plpgsql
+stable
+set search_path = ''
+as $$
+declare
+  normalized_email text := lower(btrim(event -> 'user' ->> 'email'));
+begin
+  if normalized_email is not null and exists (
+    select 1
+      from public.access_grants
+     where email = normalized_email
+       and status = 'pending'
+       and expires_at > now()
+  ) then
+    return '{}'::jsonb;
+  end if;
+
+  return jsonb_build_object(
+    'error',
+    jsonb_build_object(
+      'http_code', 403,
+      'code', 'access_not_authorized',
+      'message', 'Seu acesso ainda não foi autorizado pelo administrador.'
+    )
+  );
+end;
+$$;
+
+create or replace function public.apply_access_grant_to_new_profile()
 returns trigger
 language plpgsql
 security definer
 set search_path = ''
 as $$
 declare
-  normalized_email text := lower(btrim(new.email));
   approved_grant public.access_grants%rowtype;
 begin
-  if normalized_email is null or normalized_email = '' then
-    raise exception using
-      errcode = 'P0001',
-      message = 'access_not_authorized';
-  end if;
-
-  update public.access_grants
-     set status = 'expired'
-   where email = normalized_email
-     and status = 'pending'
-     and expires_at <= now();
-
   select *
     into approved_grant
     from public.access_grants
-   where email = normalized_email
+   where email = lower(btrim(new.email))
      and status = 'pending'
      and expires_at > now()
    for update;
 
   if not found then
-    raise exception using
-      errcode = 'P0001',
-      message = 'access_not_authorized';
+    return new;
   end if;
 
-  insert into public.profiles (id, role, status, name, email)
-  values (
-    new.id,
-    approved_grant.role,
-    'active',
-    coalesce(
-      nullif(btrim(new.raw_user_meta_data ->> 'full_name'), ''),
-      nullif(btrim(new.raw_user_meta_data ->> 'name'), ''),
-      split_part(normalized_email, '@', 1)
-    ),
-    normalized_email
-  );
+  update public.profiles
+     set role = approved_grant.role,
+         status = 'active'
+   where id = new.id;
 
   update public.access_grants
      set status = 'consumed',
@@ -141,6 +148,10 @@ begin
 end;
 $$;
 
+create trigger profiles_apply_access_grant
+after insert on public.profiles
+for each row execute function public.apply_access_grant_to_new_profile();
+
 alter table public.access_grants enable row level security;
 
 create policy access_grants_master_all
@@ -150,10 +161,22 @@ to authenticated
 using ((select public.is_master_aal2()))
 with check ((select public.is_master_aal2()));
 
+create policy access_grants_auth_hook_select
+on public.access_grants
+for select
+to supabase_auth_admin
+using (status = 'pending' and expires_at > now());
+
 revoke all on public.access_grants from anon, authenticated;
 grant select, insert, update, delete on public.access_grants to authenticated;
+grant usage on schema public to supabase_auth_admin;
+grant select on public.access_grants to supabase_auth_admin;
+grant execute on function public.hook_restrict_signup_to_grants(jsonb) to supabase_auth_admin;
+revoke execute on function public.hook_restrict_signup_to_grants(jsonb) from public, anon, authenticated;
 
 comment on table public.access_grants is
   'Autorizações de cadastro criadas exclusivamente por master em aal2; e-mail normalizado, papel sem master, validade e consumo único.';
+comment on function public.hook_restrict_signup_to_grants(jsonb) is
+  'Before User Created Hook: rejeita cadastro OAuth sem autorização pendente e válida.';
 
 commit;

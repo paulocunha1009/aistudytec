@@ -41,6 +41,10 @@ max_frequency = "1m"
 otp_length = 8
 otp_expiry = 900
 
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/hook_restrict_signup_to_grants"
+
 [edge_runtime]
 enabled = true
 policy = "per_worker"

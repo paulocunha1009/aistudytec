@@ -10,6 +10,8 @@ As regras pedagógicas permanecem invariáveis: domínio em 70%, revisão em tr�
 
 ## Sprint 8 — Supabase staging e RLS por persona — P0 — 13 pontos
 
+Status: concluída em 23 de julho de 2026. Evidências em `docs/SPRINT8_STATUS.md`.
+
 Objetivo: como responsável pela plataforma, quero um ambiente Supabase de staging reproduzível e isolado, para validar segurança antes de integrar usuários reais.
 
 Escopo:
@@ -203,4 +205,3 @@ Dependências: Sprints 8–14.
 - sincronização/leitura docente do diário do estudante;
 - WebAuthn/passkeys além de pesquisa técnica;
 - novas features que não removam risco do piloto.
-

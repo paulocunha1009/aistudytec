@@ -17,7 +17,7 @@ Uma pessoa pode acumular papéis no protótipo, mantendo responsabilidades clara
 - Sprint 5: validação real dos provedores e experiência de aprendizagem imersiva.
 - Sprint 6: confiabilidade operacional e jobs idempotentes, com migração incremental em andamento.
 - Sprint 7: credenciais e identidade; fundação, sessões revogáveis, recuperação, MFA e operação master segura em incrementos verticais.
-- Sprint 8: Supabase staging e RLS por persona.
+- Sprint 8: concluída — Supabase staging, RLS por persona e restauração lógica verificada.
 - Sprint 9: Supabase Auth, recuperação, sessões e MFA master.
 - Sprint 10: jornada docente no PostgreSQL definitivo.
 - Sprint 11: jornada do estudante, quiz e progresso no PostgreSQL.

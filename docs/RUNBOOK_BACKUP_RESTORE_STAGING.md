@@ -54,6 +54,10 @@ Nunca ensaiar restauração destrutiva sobre o próprio staging ou sobre produç
 - 15 tabelas, migration e testes RLS confirmados;
 - evidência revisada e arquivo temporário armazenado conforme política de retenção.
 
+## Último ensaio
+
+Executado em 23 de julho de 2026 por meio do Session Pooler IPv4 em São Paulo. O dump foi restaurado em PostgreSQL 18 local na porta temporária `55432`. Foram confirmadas 15 tabelas, 15 tabelas com RLS, 28 policies, 24 chaves estrangeiras e a migration remota `20260722000100`. O cluster temporário e as credenciais locais foram eliminados após a validação.
+
 ## Referências oficiais
 
 - https://supabase.com/docs/guides/platform/backups

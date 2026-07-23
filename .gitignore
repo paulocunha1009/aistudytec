@@ -13,6 +13,11 @@ supabase/.env
 .env
 *.local
 .npm-cache/
+.secrets/
+.backups/
+.restore/
+DockerDesktopInstaller.exe
+install-wsl-admin.cmd
 .claude/
 .agents/
 tcc_render/

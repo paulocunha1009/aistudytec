@@ -329,3 +329,35 @@ O `npm audit` reportou dependências vulneráveis herdadas do Create React App. 
 - cadastrar as três variáveis públicas do Vite;
 - configurar Site URL e redirects com a URL HTTPS gerada;
 - executar o smoke de produção antes de promover a release.
+
+## Incremento 14 — primeira release online homologada
+
+- repositório original `paulocunha1009/aistudytec` conectado à Vercel;
+- permissão do GitHub App limitada aos repositórios selecionados;
+- projeto `SIDEP-CE/aistudytec` criado com raiz `frontend`;
+- preset Vite, build `npm run build` e saída `dist` reconhecidos;
+- variáveis `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e
+  `VITE_APP_ENV` cadastradas para Production e Preview;
+- deploy do commit `02ef064` concluído com status `Ready`;
+- domínio oficial atribuído: `https://aistudytec.vercel.app`;
+- Site URL do Supabase atualizado para o domínio oficial;
+- portal privado e fluxo Google OAuth homologados em HTTPS;
+- retorno do OAuth ocorreu no domínio oficial, sem permanecer no callback;
+- conta master exigiu e aceitou MFA antes de liberar a administração;
+- painel principal, gestão acadêmica e gestão de acessos abriram em produção;
+- a tela de acessos exibiu os registros reais existentes, sem criação de dados
+  fictícios durante a homologação;
+- novas atualizações da branch `main` passam a gerar deploys automaticamente.
+
+### Resultado
+
+A primeira release online está operacional e vinculada ao pipeline Git. A
+homologação comprova o funcionamento técnico do acesso master em produção; não
+constitui evidência de eficácia pedagógica.
+
+## Próximo incremento
+
+- homologar em produção os perfis professor e aluno;
+- executar geração, revisão, publicação e quiz no domínio oficial;
+- verificar responsividade nos dispositivos-alvo;
+- consolidar o checklist de aceite do piloto controlado.

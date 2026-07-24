@@ -34,6 +34,8 @@ Produção utiliza:
 
 O diretório `backend/` é legado de desenvolvimento e não faz parte do caminho de produção.
 
+Aplicação homologada: [https://aistudytec.vercel.app](https://aistudytec.vercel.app)
+
 ## Desenvolvimento local
 
 ```powershell
@@ -87,6 +89,9 @@ O GitHub Actions também inicia um Supabase descartável e executa os testes pgT
 Em 23 de julho de 2026:
 
 - jornada professor → publicação → aluno → quiz → painel homologada;
+- primeira release Vercel publicada a partir da branch `main`;
+- OAuth Google e conta master com MFA homologados no domínio oficial;
+- telas protegidas de gestão e acessos validadas online;
 - Supabase remoto com migrations e lint aprovados;
 - 45 testes frontend aprovados;
 - smoke E2E aprovado em desktop e mobile;

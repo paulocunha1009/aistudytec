@@ -1,5 +1,22 @@
 # Checklist de release — Vercel
 
+## Release homologada
+
+- URL oficial: https://aistudytec.vercel.app
+- projeto Vercel: `SIDEP-CE/aistudytec`
+- repositório: `paulocunha1009/aistudytec`
+- branch de produção: `main`
+- commit implantado: `02ef064`
+- status Vercel: `Ready`
+- Site URL do Supabase: `https://aistudytec.vercel.app`
+- autenticação Google e retorno OAuth homologados;
+- conta master homologada com MFA `aal2`;
+- telas protegidas `Gestão` e `Acessos` homologadas com dados reais.
+
+O primeiro deploy foi criado diretamente do repositório original. A instalação
+GitHub App da Vercel recebeu acesso somente aos repositórios explicitamente
+selecionados; nenhuma cópia paralela do código foi criada.
+
 ## Configuração do projeto
 
 - Root Directory: `frontend`

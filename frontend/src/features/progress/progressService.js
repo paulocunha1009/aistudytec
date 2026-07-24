@@ -16,13 +16,13 @@ export const loadStudentProgress = async studentId => {
       .eq('student_id', studentId)
       .order('mastery_pct', { ascending: true }),
     client.from('review_queue')
-      .select('id, skill, topic_id, due_at, topics(title)')
+      .select('id, skill, topic_id, due_at, topics(title, status)')
       .eq('student_id', studentId)
       .eq('status', 'pending')
       .lte('due_at', now)
       .order('due_at', { ascending: true }),
     client.from('quiz_attempts')
-      .select('id, topic_id, score, total, percentage, completed_at, topics(title)')
+      .select('id, topic_id, score, total, percentage, completed_at, topics(title, status)')
       .eq('student_id', studentId)
       .not('completed_at', 'is', null)
       .order('completed_at', { ascending: false })
@@ -36,6 +36,7 @@ export const loadStudentProgress = async studentId => {
     reviews: (reviewResult.data || []).map(item => ({
       ...item,
       topic_title: item.topics?.title,
+      topic_available: item.topics?.status === 'published',
       due_date: item.due_at?.slice(0, 10),
     })),
     history: (attemptResult.data || []).map(item => ({
@@ -43,6 +44,7 @@ export const loadStudentProgress = async studentId => {
       type: 'quiz',
       topic_id: item.topic_id,
       theme: item.topics?.title,
+      topic_available: item.topics?.status === 'published',
       score: item.score,
       total: item.total,
       percentage: item.percentage,

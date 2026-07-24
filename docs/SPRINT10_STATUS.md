@@ -361,3 +361,31 @@ constitui evidência de eficácia pedagógica.
 - executar geração, revisão, publicação e quiz no domínio oficial;
 - verificar responsividade nos dispositivos-alvo;
 - consolidar o checklist de aceite do piloto controlado.
+
+## Incremento 15 — homologação dos perfis em produção
+
+- conta docente real entrou pelo Google no domínio oficial;
+- professor não recebeu o menu master `Acessos`;
+- a área `Gestão` respeitou o escopo real e informou que a conta ainda não
+  possui turma própria;
+- conta real de aluno entrou pelo Google sem MFA administrativo;
+- aluno não recebeu menus de gestão ou administração;
+- `Minha jornada` recuperou uma tentativa real, nove habilidades consistentes e
+  nenhuma revisão vencida;
+- linha do tempo confirmou o quiz de 9/9 concluído em 23/07/2026;
+- nenhum registro acadêmico fictício foi criado durante os testes;
+- foi detectado que o último tópico deixou de estar publicado, embora a
+  tentativa histórica continue válida;
+- o plano diário foi corrigido para não oferecer uma ação quebrada quando o
+  material associado à tentativa não está mais publicado;
+- revisões associadas a material indisponível preservam a evidência, mas
+  direcionam o aluno para outro conteúdo;
+- doze suítes e 46 testes frontend foram aprovados;
+- build Vite de produção transformou 1.331 módulos com sucesso.
+
+## Próximo incremento
+
+- vincular uma turma real à conta docente que conduzirá o piloto;
+- revisar e publicar um material real dessa turma;
+- homologar professor → publicação → aluno → quiz no domínio oficial;
+- concluir os testes responsivos e o checklist operacional da Sprint 15.

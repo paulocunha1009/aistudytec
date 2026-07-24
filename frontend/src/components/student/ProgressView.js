@@ -55,7 +55,7 @@ const ProgressView = ({ currentUser, onOpenTopic, onExplore }) => {
           <Card key={item.id} className={`relative overflow-hidden border-0 shadow-lg ${index === 0 ? 'bg-blue-600 text-white' : ''}`}>
             <div className="flex items-start justify-between gap-4"><span className={`grid h-11 w-11 place-items-center rounded-2xl ${index === 0 ? 'bg-white/15' : 'bg-blue-50 text-blue-600'}`}>{item.kind === 'review' ? <RefreshCw size={20} /> : <BookOpen size={20} />}</span>{item.dueDate && <Badge tone={index === 0 ? 'warning' : 'neutral'}>Venceu em {item.dueDate.split('-').reverse().join('/')}</Badge>}</div>
             <h3 className="mt-5 text-xl font-black">{item.title}</h3><p className={`mt-1 text-sm ${index === 0 ? 'text-blue-100' : 'text-slate-500'}`}>{item.context}</p>
-            <Button variant={index === 0 ? 'secondary' : 'primary'} className="mt-5 w-full" loading={openingId === item.id} onClick={() => openPlanItem(item)}>Começar agora <ArrowRight size={17} /></Button>
+            <Button variant={index === 0 ? 'secondary' : 'primary'} className="mt-5 w-full" loading={openingId === item.id} onClick={() => openPlanItem(item)}>{item.actionLabel || 'Começar agora'} <ArrowRight size={17} /></Button>
           </Card>
         ))}</div> : <EmptyState title="Nenhuma revisão vencida" description="Explore um novo tema ou aguarde o próximo item programado." action={<Button onClick={onExplore}>Explorar conteúdo</Button>} />}
       </section>

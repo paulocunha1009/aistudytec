@@ -26,16 +26,19 @@ export const buildProgressModel = ({ mastery = [], reviews = [], history = [] })
     title: `Revisar ${item.skill}`,
     context: item.topic_title || 'Revisão de habilidade',
     dueDate: item.due_date,
-    topicId: item.topic_id,
+    topicId: item.topic_available ? item.topic_id : null,
+    actionLabel: item.topic_available ? 'Começar agora' : 'Explorar outro material',
   }));
 
-  if (plan.length === 0 && timeline[0]) {
+  const latestAvailableAttempt = timeline.find(item => item.topic_available);
+  if (plan.length === 0 && latestAvailableAttempt) {
     plan.push({
-      id: `continue-${timeline[0].id}`,
+      id: `continue-${latestAvailableAttempt.id}`,
       kind: 'continue',
-      title: `Continuar em ${timeline[0].theme || 'seus estudos'}`,
-      context: `Último quiz: ${timeline[0].percentage}%`,
-      topicId: timeline[0].topic_id,
+      title: `Continuar em ${latestAvailableAttempt.theme || 'seus estudos'}`,
+      context: `Último quiz: ${latestAvailableAttempt.percentage}%`,
+      topicId: latestAvailableAttempt.topic_id,
+      actionLabel: 'Começar agora',
     });
   }
 

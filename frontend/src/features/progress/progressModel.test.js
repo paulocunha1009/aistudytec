@@ -3,7 +3,7 @@ import { buildProgressModel } from './progressModel';
 test('prioriza revisão vencida e mantém evidência real', () => {
   const result = buildProgressModel({
     mastery: [{ id: 'm1', skill: 'Equações', mastery_pct: 80, total_count: 4 }],
-    reviews: [{ id: 'r1', skill: 'Equações', topic_title: 'Funções', due_date: '2026-07-22' }],
+    reviews: [{ id: 'r1', skill: 'Equações', topic_title: 'Funções', due_date: '2026-07-22', topic_available: true }],
   });
   expect(result.skills[0].stage).toBe('revisar');
   expect(result.plan[0]).toMatchObject({ kind: 'review', title: 'Revisar Equações', context: 'Funções' });
@@ -21,9 +21,17 @@ test('classifica domínio pela regra de 70% e quantidade de evidências', () => 
 
 test('ordena histórico brasileiro e sugere continuidade quando não há revisão', () => {
   const result = buildProgressModel({ history: [
-    { id: 'old', type: 'quiz', theme: 'Química', percentage: 60, date: '02/07/2026 10:00' },
-    { id: 'new', type: 'quiz', theme: 'Física', percentage: 90, date: '20/07/2026 10:00' },
+    { id: 'old', type: 'quiz', theme: 'Química', percentage: 60, date: '02/07/2026 10:00', topic_available: true },
+    { id: 'new', type: 'quiz', theme: 'Física', percentage: 90, date: '20/07/2026 10:00', topic_available: true },
   ] });
   expect(result.timeline.map(item => item.id)).toEqual(['new', 'old']);
   expect(result.plan[0].title).toBe('Continuar em Física');
+});
+
+test('não oferece continuidade para material que deixou de estar publicado', () => {
+  const result = buildProgressModel({ history: [
+    { id: 'old', type: 'quiz', theme: 'Hardware', percentage: 100, date: '20/07/2026 10:00', topic_available: false },
+  ] });
+  expect(result.timeline).toHaveLength(1);
+  expect(result.plan).toHaveLength(0);
 });

@@ -445,3 +445,28 @@ constitui evidência de eficácia pedagógica.
 
 - publicar o material apenas mediante confirmação explícita;
 - homologar o consumo e o quiz pela conta real do aluno.
+
+## Incremento 18 — publicação e homologação ponta a ponta
+
+- o professor abriu o tópico real da `Turma Piloto — Técnico em Informática`;
+- a revisão confirmou os quatro critérios obrigatórios atendidos;
+- a publicação exigiu confirmação explícita antes de liberar o conteúdo;
+- o sistema confirmou `Tópico publicado para a turma!`;
+- o material passou a ser exibido como `Versão 5 · publicação docente`;
+- a conta real `atendimentophcinfor@gmail.com`, matriculada na turma, recebeu o
+  material imediatamente após a publicação;
+- os níveis `Descobrir`, `Aprofundar` e `Conectar` ficaram disponíveis ao aluno;
+- o nível avançado exibiu o vídeo institucional
+  `Ciclo de palestras Segurança da Internet — CERT.br: Autenticação`;
+- leitura guiada, investigação, missão audiovisual, atividade prática,
+  metacognição e fontes confiáveis foram carregadas;
+- o quiz abriu corretamente com `Questão 1 de 9`;
+- o quiz foi fechado sem respostas para não criar evidência acadêmica fictícia
+  nem interferir no histórico real do aluno.
+
+## Próximo incremento
+
+- executar uma tentativa real de quiz conduzida pelo aluno;
+- validar correção, feedback, habilidades e atualização de progresso;
+- homologar o painel docente após a tentativa;
+- concluir o checklist responsivo e operacional do piloto.

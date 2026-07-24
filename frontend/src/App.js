@@ -14,10 +14,7 @@ import MfaGate from './features/auth/MfaGate';
 import { useAuth } from './features/auth/AuthProvider';
 import { isSupabaseConfigured } from './lib/supabase';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
 const AISTUDYTECDashboard = () => {
-  const apiUrl = API_URL;
   const auth = useAuth();
   const currentUser = auth.identity ? { type: auth.identity.type, data: auth.identity } : null;
   const [activeTab, setActiveTab] = useState('home');
@@ -116,7 +113,7 @@ const AISTUDYTECDashboard = () => {
         )}
 
         {activeTab === 'teacher' && (currentUser?.type === 'teacher' || currentUser?.type === 'master') && (
-          <TeacherPanel apiUrl={apiUrl} currentUser={currentUser} addToast={addToast} />
+          <TeacherPanel currentUser={currentUser} addToast={addToast} />
         )}
 
         {activeTab === 'access-management' && currentUser?.type === 'master' && (

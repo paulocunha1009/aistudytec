@@ -1,95 +1,96 @@
 # AISTUDYTEC
 
-Ferramenta de estudo independente para alunos do Ensino Médio, pensada para complementar — não substituir — o que é visto em sala de aula. Qualquer professor, de qualquer disciplina, cadastra temas de reforço para sua turma; a IA gera explicações em 3 níveis, um quiz com feedback imediato e sugestões de vídeo do YouTube; o professor revisa e aprova antes de publicar; o aluno estuda e o sistema acompanha, por habilidade, o que cada aluno já domina e o que precisa revisar.
+Plataforma privada de aprendizagem complementar para o Ensino Médio e cursos técnicos. O professor seleciona componentes, competências e descritores curriculares; a IA propõe um material fundamentado; o professor revisa e publica; o aluno estuda, responde ao quiz e recebe um plano baseado em evidências reais.
 
-## Conceito pedagógico
+## Princípios do produto
 
-- **Complementar, não substituto**: o professor decide os temas de reforço (por exemplo, a partir do que observa em uma avaliação diagnóstica externa — não integrada a este sistema).
-- **Multi-nível**: cada tema tem explicação simples, técnica e avançada, cada uma pareada com um vídeo do YouTube adequado a esse nível.
-- **Feedback imediato**: o quiz mostra certo/errado e a explicação logo após cada resposta, não só a nota final.
-- **Granularidade por habilidade**: cada questão avalia uma habilidade específica (estilo BNCC), não apenas o tema genérico — o que torna o diagnóstico de erros acionável.
-- **Revisão espaçada**: habilidades com desempenho abaixo do limiar voltam a ser sugeridas alguns dias depois.
-- **Curadoria antes de publicar**: conteúdo gerado por IA para uma turma passa por revisão do professor antes de ficar visível aos alunos. Temas digitados livremente pelo aluno são exceção: aparecem na hora, só para quem pediu, com aviso de "não revisado".
-- **Progresso sem gamificação infantilizada**: painel do aluno mostra "domino" vs. "preciso reforçar", adequado a adolescentes perto do ENEM/vestibular.
+- curadoria docente obrigatória antes da publicação;
+- somente usuários previamente autorizados entram no sistema;
+- professor administra apenas suas turmas e alunos;
+- master possui autoridade global protegida por MFA;
+- gabaritos nunca são enviados ao navegador do aluno;
+- percentuais são evidências descritivas, não diagnósticos de capacidade;
+- nenhuma alegação de eficácia é feita sem pesquisa apropriada.
 
-## Arquitetura
+## Arquitetura atual
 
-```
-backend/            Flask + SQLite
-  app.py             rotas + esquema do banco (init_db)
-  gemini_client.py   geração de explicação + quiz via Gemini
-  youtube_client.py  busca e ranking de vídeos via YouTube Data API v3
-  .env.example       modelo de variáveis de ambiente (chaves de API)
-
-frontend/           React (Create React App, sem TypeScript)
-  src/api/client.js                  chamadas HTTP centralizadas
-  src/components/                    Sidebar, Toast, modais de login/cadastro
-  src/components/teacher/            gestão de turmas, tópicos, revisão, dashboard
-  src/components/student/            navegação de tópicos, estudo, quiz, progresso
+```text
+frontend/                 React e design system
+supabase/migrations/      PostgreSQL, RLS, RPCs e auditoria versionados
+supabase/functions/       Gemini e YouTube executados no servidor
+supabase/tests/           testes pgTAP transacionais
+docs/                     produto, segurança, sprints e evidências
+.github/workflows/        quality gate isolado
 ```
 
-Sem TypeScript, sem gerenciador de estado externo, sem roteador — o app é pequeno o suficiente para não precisar disso. Tailwind é carregado via CDN em tempo de execução (não é build-time), como no protótipo original.
+Produção utiliza:
 
-## Como rodar
+- Vercel para o frontend estático;
+- Supabase Auth para identidade e sessões;
+- PostgreSQL com Row Level Security;
+- Edge Functions para geração e validação de vídeos;
+- Gemini com grounding e YouTube Data API;
+- MFA `aal2` para operações do master.
 
-**Backend**
-```
-cd backend
-cp .env.example .env   # preencher GEMINI_API_KEY e YOUTUBE_API_KEY
-pip install -r requirements.txt
-python app.py          # http://localhost:5000
-```
+O diretório `backend/` é legado de desenvolvimento e não faz parte do caminho de produção.
 
-**Frontend**
-```
+## Desenvolvimento local
+
+```powershell
 cd frontend
+Copy-Item .env.example .env.local
 npm install
-npm start               # http://localhost:3000
+npm start
 ```
 
-A `GEMINI_API_KEY` já existente pode ser reaproveitada. A `YOUTUBE_API_KEY` precisa ser gerada no Google Cloud Console (YouTube Data API v3) — é uma conta/ação do usuário, gratuita, com cota diária.
+Variáveis públicas necessárias:
 
-Sem as chaves configuradas, os endpoints de geração de conteúdo (`/api/topics/<id>/generate`, `/api/topics/freetext`) respondem com erro `502` controlado, sem derrubar o servidor.
+```text
+REACT_APP_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+REACT_APP_SUPABASE_PUBLISHABLE_KEY=sb_publishable_SUBSTITUA
+REACT_APP_APP_ENV=development
+```
 
-Para implantação, não copie o `.env` local. Configure as variáveis no gerenciador de segredos da hospedagem e siga `docs/DEPLOYMENT_SECURITY.md`. Com `APP_ENV=production`, o backend bloqueia inicialização insegura.
+Nunca coloque `service_role`, Gemini ou YouTube no frontend. Esses segredos pertencem ao Supabase.
 
-## Modelo de dados
+## Quality gate
 
-Além das tabelas originais (`users`, `classes`, `history`, agora com colunas extras `grade_year`/`topic_id`/`class_id`):
+```powershell
+cd frontend
+npm test -- --watchAll=false
+npm run build
+npm run test:e2e
+```
 
-| Tabela | Papel |
-|---|---|
-| `topics` | Tema de estudo — curado pelo professor (`origin='teacher'`) ou gerado livremente pelo aluno (`origin='student'`); tem `status`: draft → generated → published |
-| `topic_explanations` | Uma linha por nível (simple/technical/advanced), editável pelo professor |
-| `topic_learning_paths` | Trilha imersiva por nível: objetivos, ideias-chave, investigação, missão de vídeo, desafio e reflexão |
-| `quiz_questions` | Pergunta, opções, resposta certa, explicação de feedback, habilidade (`skill`), dificuldade |
-| `topic_videos` | Candidatos de vídeo do YouTube por tópico e nível, com `approved` como gate do professor |
-| `quiz_attempt_answers` | Resposta de cada pergunta em cada tentativa (liga a `history`) |
-| `skill_mastery` | Domínio agregado por aluno + habilidade (alimenta progresso do aluno e dashboard do professor) |
-| `review_queue` | Fila de revisão espaçada (aluno, habilidade, data de vencimento) |
+O GitHub Actions também inicia um Supabase descartável e executa os testes pgTAP dentro de transações revertidas. Nenhum teste automatizado escreve na turma real.
 
-## Parâmetros pedagógicos (decisões de produto, não valores arbitrários)
+## Regras pedagógicas vigentes
 
-- Domínio de habilidade: **≥ 70%** de acerto
-- Revisão espaçada: reaparece **3 dias** depois se abaixo do limiar
-- **8–10 questões** geradas por tópico
-- Gate de publicação: 3 níveis de explicação preenchidos, ≥ 5 questões com habilidade e resposta certa definidas, ≥ 1 vídeo aprovado por nível
-- Tema livre do aluno: sem gate de revisão do professor, nunca vira conteúdo oficial da turma
+- domínio descritivo: pelo menos 70% das respostas acumuladas;
+- abaixo de 70%: revisão programada para três dias;
+- uma revisão pendente por aluno e habilidade;
+- três níveis de profundidade;
+- pelo menos oito questões com descritor e feedback;
+- um vídeo aprovado por nível;
+- painel sinaliza pouca evidência quando existe apenas uma resposta.
 
-## Estado verificado em 22 de julho de 2026
+## Evidências e documentação
 
-- Sessão HTTP-only, papéis, autorização por recurso, defesa de origem, rate limit, headers e auditoria minimizada implementados.
-- Gemini e YouTube Data API v3 validados com chaves reais sem exposição de segredos; geração e consulta retornaram HTTP 200.
-- Modelo estável `gemini-2.5-flash`, JSON estruturado, validação de três trilhas e nove questões, limite ampliado e uma repetição controlada diante de resposta inválida.
-- Experiência imersiva: Descobrir, Aprofundar e Conectar; objetivos, leitura guiada, mundo real, investigação, missão de vídeo, desafio, reflexão, diário local e checklist de autonomia.
-- Vídeos exigem correspondência entre termos relevantes do tema e o título; relevância precede popularidade. A faixa de duração é de 3–20 minutos.
-- Chamadas comuns mantêm timeout de 30 s; geração/regeneração usa 180 s e informa espera de 30–90 s.
-- Evidência automatizada: 40 testes backend, 15 testes frontend e build de produção aprovado.
+- [Arquitetura de produção](docs/PRODUCTION_ARCHITECTURE_SUPABASE_VERCEL.md)
+- [Segurança e autorização](docs/SECURITY_AUTHORIZATION.md)
+- [Status da Sprint 10](docs/SPRINT10_STATUS.md)
+- [Homologação E2E real](docs/E2E_PILOT_2026-07-23.md)
+- [Checklist de release Vercel](docs/VERCEL_RELEASE.md)
 
-## Limitações conhecidas
+## Estado verificado
 
-- Não há evidência própria de eficácia educacional, usabilidade com participantes ou impacto sobre aprendizagem.
-- SQLite, servidor Flask de desenvolvimento e fluxo síncrono de geração não foram validados para escala pública.
-- Migrações não são versionadas; backup/restauração e E2E autenticado de interface permanecem pendentes.
-- `grade_year` do aluno ainda depende da decisão de produto e do vínculo com turma/tópico.
-- O diário imersivo usa armazenamento local do dispositivo e ainda não possui sincronização ou moderação docente.
+Em 23 de julho de 2026:
+
+- jornada professor → publicação → aluno → quiz → painel homologada;
+- Supabase remoto com migrations e lint aprovados;
+- 45 testes frontend aprovados;
+- smoke E2E aprovado em desktop e mobile;
+- build de produção aprovado;
+- nenhum segredo versionado.
+
+Essa evidência confirma funcionamento técnico, não eficácia educacional.

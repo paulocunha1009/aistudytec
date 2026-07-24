@@ -1,38 +1,53 @@
-# Checklist de configuração segura para implantação
+# Segurança de implantação — Supabase e Vercel
 
-Nunca envie `backend/.env` ao Git nem copie suas chaves para frontend, imagem Docker, logs ou documentação. Em produção, cadastre os valores no painel de variáveis secretas da hospedagem.
+## Separação de credenciais
 
-## Variáveis obrigatórias
+Na Vercel ficam somente valores públicos:
 
 ```text
-APP_ENV=production
-ADMIN_USERNAME=master
-ADMIN_PASSWORD=<segredo forte do gerenciador da hospedagem>
-SESSION_SECRET=<48 bytes aleatórios ou mais>
-GEMINI_API_KEY=<segredo>
-YOUTUBE_API_KEY=<segredo>
-ALLOWED_ORIGINS=https://dominio-real-do-frontend
-SESSION_COOKIE_SECURE=true
-SESSION_COOKIE_SAMESITE=Lax
-SESSION_HOURS=8
-RATELIMIT_STORAGE_URI=redis://...
+REACT_APP_SUPABASE_URL
+REACT_APP_SUPABASE_PUBLISHABLE_KEY
+REACT_APP_APP_ENV=production
 ```
 
-O processo se recusa a iniciar em `production` quando administrador, segredo de sessão, domínio HTTPS, cookie seguro ou rate limit compartilhado estão ausentes/inseguros.
+No cofre do Supabase ficam:
 
-## Primeiro deploy
+```text
+GEMINI_API_KEY
+YOUTUBE_API_KEY
+```
 
-1. Criar banco persistente fora do filesystem efêmero do container.
-2. Configurar todas as variáveis no secret manager.
-3. Executar `init_db()` uma vez; o master será criado com senha em hash.
-4. Reiniciar a aplicação e confirmar login, cookie `Secure` e origem permitida.
-5. Confirmar que `.env`, banco e logs não fazem parte do artefato público.
-6. Criar backup antes de migração ou troca de versão.
+`service_role`, tokens pessoais, senhas e fatores MFA nunca devem entrar no frontend, Git, logs, documentação ou variáveis expostas pelo React.
 
-## Rotação
+## Controles ativos
 
-Trocar `ADMIN_PASSWORD` no secret manager e reiniciar executa novo hash no master existente. Trocar `SESSION_SECRET` encerra sessões atuais; planejar janela de manutenção. Chaves vazadas devem ser revogadas no provedor, não apenas removidas do arquivo local.
+- cadastro fechado pelo hook de autorização;
+- Row Level Security em dados acadêmicos;
+- MFA `aal2` nas ações administrativas do master;
+- RPCs server-side para correção de quiz e agregações;
+- gabarito em tabela sem leitura estudantil;
+- auditoria de operações sensíveis;
+- Content Security Policy e headers defensivos na Vercel;
+- testes pgTAP isolados por transação;
+- quality gate obrigatório antes do deploy.
 
-## Limites atuais
+## Antes de publicar
 
-Antes de exposição pública ainda são necessários HTTPS real, armazenamento persistente, Redis para rate limit, backup/restauração demonstrados, migrações versionadas, E2E autenticado e revisão LGPD.
+1. Confirmar que todas as migrations foram aplicadas.
+2. Executar `supabase db lint --linked`.
+3. Executar testes frontend, build e Playwright.
+4. Confirmar as URLs autorizadas no Supabase Auth.
+5. Adicionar a URL final da Vercel ao Google OAuth.
+6. Configurar variáveis públicas na Vercel.
+7. Verificar que nenhum `.env.local`, relatório ou estado autenticado está rastreado.
+8. Testar login Google, logout, master com MFA e acesso de aluno.
+9. Validar headers na URL HTTPS final.
+10. Registrar commit e evidência da versão implantada.
+
+## Resposta a vazamento
+
+Revogue o segredo no provedor, substitua-o no cofre correto e examine a auditoria. Remover o valor do repositório não invalida uma credencial já exposta. Para histórico Git contaminado, interrompa o deploy e execute procedimento específico de saneamento e rotação.
+
+## Limites
+
+O plano gratuito do Supabase não substitui uma política externa de backup. Antes de piloto ampliado, executar o runbook de backup/restauração, concluir a revisão LGPD e definir retenção, base legal, atendimento ao titular e resposta a incidentes.

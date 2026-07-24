@@ -280,6 +280,29 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 
 ## Próximo incremento
 
-- automatizar cenários E2E isolados sem contaminar dados acadêmicos reais;
-- revisar a experiência móvel e os estados de erro do fluxo autenticado;
-- preparar o corte de release para Vercel.
+## Incremento 12 — quality gate e preparação da Vercel
+
+- Playwright configurado para Chromium em desktop e viewport móvel;
+- smoke E2E comprova que o portal privado bloqueia a aplicação antes da autenticação;
+- testes de navegador não reutilizam nem versionam sessões reais;
+- pipeline GitHub Actions executa testes frontend, build e Playwright;
+- job independente inicia Supabase descartável e executa pgTAP com rollback;
+- relatórios, vídeos, screenshots e traces do Playwright ficam fora do Git;
+- `vercel.json` define fallback da SPA e headers defensivos;
+- Content Security Policy limita scripts, conexões, frames e formulários;
+- fallback residual para Flask removido do frontend;
+- README e guia de implantação atualizados para Supabase + Vercel;
+- checklist operacional criado em `docs/VERCEL_RELEASE.md`;
+- segredos Gemini e YouTube permanecem exclusivamente no Supabase;
+- três smoke tests E2E aprovados e um caso desktop não aplicável ignorado;
+- doze suítes, 45 testes frontend e build de produção aprovados.
+
+### Débito técnico identificado
+
+O `npm audit` reportou dependências vulneráveis herdadas do Create React App. Não foi aplicado `audit fix --force`, pois a correção quebraria o toolchain sem migração controlada. A substituição do Create React App por Vite entra como requisito de hardening antes do piloto ampliado.
+
+## Próximo incremento
+
+- migrar o frontend de Create React App para Vite;
+- executar novamente testes, CSP e build após a troca;
+- criar e homologar o primeiro deploy Preview na Vercel.

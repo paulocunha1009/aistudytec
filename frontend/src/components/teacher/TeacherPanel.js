@@ -10,7 +10,7 @@ const SUBTABS = [
   { key: 'dashboard', label: 'Desempenho' },
 ];
 
-const TeacherPanel = ({ apiUrl, currentUser, addToast }) => {
+const TeacherPanel = ({ currentUser, addToast }) => {
   const [classId, setClassId] = useState(null);
   const [topicId, setTopicId] = useState(null);
   const [subTab, setSubTab] = useState('topics');
@@ -30,7 +30,7 @@ const TeacherPanel = ({ apiUrl, currentUser, addToast }) => {
             ))}
           </div>
           {subTab === 'topics' && (
-            <TopicManager apiUrl={apiUrl} currentUser={currentUser} classId={classId} onSelectTopic={setTopicId} addToast={addToast} />
+            <TopicManager currentUser={currentUser} classId={classId} onSelectTopic={setTopicId} addToast={addToast} />
           )}
           {subTab === 'dashboard' && (
             <TeacherDashboard classId={classId} onSelectTopic={setTopicId} />
@@ -39,7 +39,7 @@ const TeacherPanel = ({ apiUrl, currentUser, addToast }) => {
       )}
 
       {classId && topicId && (
-        <TopicReview apiUrl={apiUrl} topicId={topicId} onBack={() => setTopicId(null)} addToast={addToast} />
+        <TopicReview topicId={topicId} onBack={() => setTopicId(null)} addToast={addToast} />
       )}
     </div>
   );

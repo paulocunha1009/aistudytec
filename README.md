@@ -46,9 +46,9 @@ npm start
 Variáveis públicas necessárias:
 
 ```text
-REACT_APP_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-REACT_APP_SUPABASE_PUBLISHABLE_KEY=sb_publishable_SUBSTITUA
-REACT_APP_APP_ENV=development
+VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_SUBSTITUA
+VITE_APP_ENV=development
 ```
 
 Nunca coloque `service_role`, Gemini ou YouTube no frontend. Esses segredos pertencem ao Supabase.
@@ -57,7 +57,7 @@ Nunca coloque `service_role`, Gemini ou YouTube no frontend. Esses segredos pert
 
 ```powershell
 cd frontend
-npm test -- --watchAll=false
+npm test
 npm run build
 npm run test:e2e
 ```
@@ -90,7 +90,7 @@ Em 23 de julho de 2026:
 - Supabase remoto com migrations e lint aprovados;
 - 45 testes frontend aprovados;
 - smoke E2E aprovado em desktop e mobile;
-- build de produção aprovado;
+- build Vite de produção aprovado;
 - nenhum segredo versionado.
 
 Essa evidência confirma funcionamento técnico, não eficácia educacional.

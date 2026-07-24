@@ -27,12 +27,22 @@ Um incremento está concluído quando:
 
 ## Baseline consolidada
 
-Em 22 de julho de 2026: 40 testes backend e 15 testes frontend aprovados; build de produção aprovado. Smoke tests reais confirmaram autenticação Gemini, geração com `gemini-2.5-flash` e consulta à YouTube Data API v3. O teste real de trilha retornou três níveis, três objetivos, três ideias essenciais, três passos de investigação, nove questões e três vídeos. Esses números verificam o contrato técnico, não eficácia educacional.
+Em 23 de julho de 2026: 45 testes frontend em Vitest, três smoke tests Playwright, build Vite e homologação autenticada aprovados. O Supabase possui migrations versionadas, testes pgTAP e lint remoto. Esses resultados verificam o contrato técnico, não eficácia educacional.
 
-Executar `powershell -NoProfile -ExecutionPolicy Bypass -File skills/aistudytec-engineering/scripts/verify.ps1`. Credenciais reais exigem smoke test separado.
+Executar:
 
-Para a arquitetura Supabase, executar adicionalmente `npx supabase db reset` e `npx supabase test db`. O código SQL ou a presença das migrations não substituem a recriação real do banco e os testes RLS.
+```powershell
+cd frontend
+npm ci
+npm audit --audit-level=low
+npm test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+Para a arquitetura Supabase, executar adicionalmente `npx supabase db reset` e `npx supabase test db` em ambiente descartável. O código SQL ou a presença das migrations não substituem a recriação real do banco e os testes RLS.
 
 ## Dependências frontend
 
-Em 22 de julho de 2026, `npm audit` registrou 28 alertas transitivos (9 baixos, 6 moderados e 13 altos; zero críticos), concentrados no `react-scripts@5.0.1` e em suas ferramentas de build/desenvolvimento. `npm audit fix` sem `--force` não encontrou outra atualização compatível. Não executar `npm audit fix --force`: a sugestão substitui `react-scripts` por `0.0.0` e quebra o projeto. A correção estrutural é migrar do Create React App em uma sprint própria, com build e regressão verificados.
+Em 23 de julho de 2026, o Create React App foi removido e substituído por Vite 6/Vitest 3. `npm audit --audit-level=low` retornou zero vulnerabilidades. Atualizações futuras continuam exigindo regressão completa; não usar `audit fix --force` sem análise.

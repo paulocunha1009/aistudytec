@@ -79,9 +79,9 @@ Eventos: login relevante, convite, alteração de papel/estado, MFA, publicaçã
 
 ### Frontend Vercel
 
-- `REACT_APP_SUPABASE_URL`;
-- `REACT_APP_SUPABASE_PUBLISHABLE_KEY`;
-- `REACT_APP_APP_ENV`.
+- `VITE_SUPABASE_URL`;
+- `VITE_SUPABASE_PUBLISHABLE_KEY`;
+- `VITE_APP_ENV`.
 
 São valores públicos por natureza. Nenhum segredo server-side pode usar prefixo exposto pelo build.
 
@@ -143,4 +143,3 @@ Nenhum item será marcado concluído por simulação ou dado inventado.
 - Queues: https://supabase.com/docs/guides/queues
 - Background tasks: https://supabase.com/docs/guides/functions/background-tasks
 - Variáveis Vercel: https://vercel.com/docs/environment-variables
-

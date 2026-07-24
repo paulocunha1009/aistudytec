@@ -5,9 +5,9 @@
 Na Vercel ficam somente valores públicos:
 
 ```text
-REACT_APP_SUPABASE_URL
-REACT_APP_SUPABASE_PUBLISHABLE_KEY
-REACT_APP_APP_ENV=production
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_APP_ENV=production
 ```
 
 No cofre do Supabase ficam:

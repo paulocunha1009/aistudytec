@@ -1,15 +1,15 @@
 import { listCurriculumComponents } from './curriculumService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({
-  requireSupabase: jest.fn(),
+vi.mock('../../lib/supabase', () => ({
+  requireSupabase: vi.fn(),
 }));
 
 test('carrega componentes do catálogo técnico e normaliza a contagem', async () => {
   const query = {
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    order: jest.fn().mockResolvedValue({
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockResolvedValue({
       data: [{
         id: 'component-1',
         name: 'Banco de Dados',
@@ -27,7 +27,7 @@ test('carrega componentes do catálogo técnico e normaliza a contagem', async (
       error: null,
     }),
   };
-  requireSupabase.mockReturnValue({ from: jest.fn(() => query) });
+  requireSupabase.mockReturnValue({ from: vi.fn(() => query) });
 
   await expect(listCurriculumComponents()).resolves.toEqual([{
     id: 'component-1',

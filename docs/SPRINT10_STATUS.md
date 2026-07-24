@@ -303,6 +303,29 @@ O `npm audit` reportou dependências vulneráveis herdadas do Create React App. 
 
 ## Próximo incremento
 
-- migrar o frontend de Create React App para Vite;
-- executar novamente testes, CSP e build após a troca;
 - criar e homologar o primeiro deploy Preview na Vercel.
+
+## Incremento 13 — migração para Vite
+
+- `react-scripts` e Create React App removidos do projeto;
+- Vite 6 assumiu desenvolvimento, build e preview;
+- Vitest 3 substituiu Jest mantendo as 45 verificações existentes;
+- mocks foram convertidos para `vi` com içamento correto;
+- Tailwind passou a usar PostCSS e Autoprefixer explicitamente;
+- variáveis públicas adotaram o prefixo `VITE_`;
+- compatibilidade temporária com o `.env.local` anterior foi mantida somente no ambiente local;
+- output de produção mudou de `build` para `dist`;
+- Vercel, GitHub Actions, Playwright, README e runbooks foram atualizados;
+- workflow legado duplicado foi removido;
+- build transformou 1.331 módulos com sucesso;
+- três smoke tests E2E passaram contra servidor Vite isolado;
+- sessão autenticada existente, gestão, painel e dados reais foram homologados visualmente no Vite;
+- `npm audit --audit-level=low` retornou zero vulnerabilidades;
+- servidor CRA antigo foi encerrado e a porta 3000 passou a ser atendida pelo Vite.
+
+## Próximo incremento
+
+- criar o primeiro deploy Preview na Vercel;
+- cadastrar as três variáveis públicas do Vite;
+- configurar Site URL e redirects com a URL HTTPS gerada;
+- executar o smoke de produção antes de promover a release.

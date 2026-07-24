@@ -7,13 +7,13 @@ import {
 } from './topicReviewService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({ requireSupabase: jest.fn() }));
+vi.mock('../../lib/supabase', () => ({ requireSupabase: vi.fn() }));
 
 describe('topicReviewService', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   test('invoca geração somente pela Edge Function protegida', async () => {
-    const invoke = jest.fn().mockResolvedValue({
+    const invoke = vi.fn().mockResolvedValue({
       data: { status: 'generated', sourceCount: 4 },
       error: null,
     });
@@ -27,7 +27,7 @@ describe('topicReviewService', () => {
   });
 
   test('traduz detalhes do gate de publicação', async () => {
-    const rpc = jest.fn().mockResolvedValue({
+    const rpc = vi.fn().mockResolvedValue({
       data: null,
       error: { code: '23514', details: 'mínimo de oito questões | um vídeo aprovado por nível' },
     });
@@ -66,7 +66,7 @@ describe('topicReviewService', () => {
   });
 
   test('aprovação de vídeo usa contrato auditado do banco', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: {}, error: null });
+    const rpc = vi.fn().mockResolvedValue({ data: {}, error: null });
     requireSupabase.mockReturnValue({ rpc });
     await setVideoApproval({ videoId: 'video-1', approved: true });
     expect(rpc).toHaveBeenCalledWith('set_topic_video_approval', {
@@ -76,7 +76,7 @@ describe('topicReviewService', () => {
   });
 
   test('envia vídeo escolhido para validação server-side', async () => {
-    const invoke = jest.fn().mockResolvedValue({ data: { video: { id: 'video-2' } }, error: null });
+    const invoke = vi.fn().mockResolvedValue({ data: { video: { id: 'video-2' } }, error: null });
     requireSupabase.mockReturnValue({ functions: { invoke } });
     await expect(addValidatedTopicVideo({
       topicId: 'topic-1',

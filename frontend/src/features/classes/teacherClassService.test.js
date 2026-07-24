@@ -1,18 +1,18 @@
 import { createOwnedClass, listOwnedClasses } from './teacherClassService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({
-  requireSupabase: jest.fn(),
+vi.mock('../../lib/supabase', () => ({
+  requireSupabase: vi.fn(),
 }));
 
 describe('teacherClassService', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   test('lista somente turmas vinculadas ao professor atual', async () => {
     const query = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockResolvedValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
         data: [{
           id: 'class-1',
           class_curriculum_components: [{ curriculum_components: { id: 'component-1', name: 'Banco de Dados' } }],
@@ -21,7 +21,7 @@ describe('teacherClassService', () => {
         error: null,
       }),
     };
-    requireSupabase.mockReturnValue({ from: jest.fn(() => query) });
+    requireSupabase.mockReturnValue({ from: vi.fn(() => query) });
 
     await expect(listOwnedClasses('teacher-1')).resolves.toEqual([expect.objectContaining({
       id: 'class-1',
@@ -32,7 +32,7 @@ describe('teacherClassService', () => {
   });
 
   test('cria turma pelo contrato RPC sem aceitar teacherId do cliente', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: { id: 'class-1', code: 'A1B2C3D4' }, error: null });
+    const rpc = vi.fn().mockResolvedValue({ data: { id: 'class-1', code: 'A1B2C3D4' }, error: null });
     requireSupabase.mockReturnValue({ rpc });
 
     await createOwnedClass({
@@ -55,7 +55,7 @@ describe('teacherClassService', () => {
 
   test('traduz negação de permissão do banco', async () => {
     requireSupabase.mockReturnValue({
-      rpc: jest.fn().mockResolvedValue({ data: null, error: { code: '42501' } }),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: { code: '42501' } }),
     });
 
     await expect(createOwnedClass({

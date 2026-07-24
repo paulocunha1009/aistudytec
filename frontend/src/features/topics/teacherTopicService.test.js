@@ -5,16 +5,16 @@ import {
 } from './teacherTopicService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({ requireSupabase: jest.fn() }));
+vi.mock('../../lib/supabase', () => ({ requireSupabase: vi.fn() }));
 
 describe('teacherTopicService', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   test('lista tópicos apenas da turma e mapeia descritores', async () => {
     const query = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockResolvedValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
         data: [{
           id: 'topic-1',
           topic_curriculum_descriptors: [
@@ -25,7 +25,7 @@ describe('teacherTopicService', () => {
         error: null,
       }),
     };
-    requireSupabase.mockReturnValue({ from: jest.fn(() => query) });
+    requireSupabase.mockReturnValue({ from: vi.fn(() => query) });
     const result = await listTeacherTopics('class-1');
     expect(query.eq).toHaveBeenCalledWith('class_id', 'class-1');
     expect(result[0].descriptors.map(item => item.code)).toEqual(['D01', 'D02']);
@@ -33,18 +33,18 @@ describe('teacherTopicService', () => {
 
   test('lista descritores do blueprint da turma', async () => {
     const query = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockResolvedValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({
         data: [{ curriculum_descriptors: { id: 'd1', code: 'D01' } }],
         error: null,
       }),
     };
-    requireSupabase.mockReturnValue({ from: jest.fn(() => query) });
+    requireSupabase.mockReturnValue({ from: vi.fn(() => query) });
     await expect(listClassBlueprintDescriptors('class-1')).resolves.toEqual([{ id: 'd1', code: 'D01' }]);
   });
 
   test('cria tópico somente por RPC com descritores', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: { id: 'topic-1' }, error: null });
+    const rpc = vi.fn().mockResolvedValue({ data: { id: 'topic-1' }, error: null });
     requireSupabase.mockReturnValue({ rpc });
     await createTeacherTopic({
       classId: 'class-1',

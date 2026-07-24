@@ -3,9 +3,9 @@
 ## Configuração do projeto
 
 - Root Directory: `frontend`
-- Framework Preset: Create React App
+- Framework Preset: Vite
 - Build Command: `npm run build`
-- Output Directory: `build`
+- Output Directory: `dist`
 - Install Command: `npm ci`
 
 ## Variáveis
@@ -13,9 +13,9 @@
 Cadastrar em Preview e Production:
 
 ```text
-REACT_APP_SUPABASE_URL=https://wwvocglvwkkypdclinnb.supabase.co
-REACT_APP_SUPABASE_PUBLISHABLE_KEY=<chave pública do projeto>
-REACT_APP_APP_ENV=production
+VITE_SUPABASE_URL=https://wwvocglvwkkypdclinnb.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<chave pública do projeto>
+VITE_APP_ENV=production
 ```
 
 A chave publicável pode estar no bundle; a segurança depende de RLS e dos contratos server-side. Nunca substituir pela `service_role`.
@@ -34,7 +34,7 @@ Copiar a URL HTTPS final e configurar:
 ```powershell
 cd frontend
 npm ci
-npm test -- --watchAll=false
+npm test
 npm run build
 npx playwright install chromium
 npm run test:e2e

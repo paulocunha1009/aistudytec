@@ -1,15 +1,15 @@
 import { listStudentPublishedTopics, submitPublishedQuiz } from './studentTopicService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({ requireSupabase: jest.fn() }));
+vi.mock('../../lib/supabase', () => ({ requireSupabase: vi.fn() }));
 
 describe('studentTopicService', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   test('carrega materiais publicados de todas as matrículas ativas', async () => {
     const membershipQuery = {
-      select: jest.fn().mockReturnThis(),
-      is: jest.fn().mockResolvedValue({
+      select: vi.fn().mockReturnThis(),
+      is: vi.fn().mockResolvedValue({
         data: [
           { class_id: 'class-1', classes: { name: 'Turma A' } },
           { class_id: 'class-2', classes: { name: 'Turma B' } },
@@ -18,16 +18,16 @@ describe('studentTopicService', () => {
       }),
     };
     const topicQuery = {
-      select: jest.fn().mockReturnThis(),
-      in: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockResolvedValue({
+      select: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
         data: [{ id: 'topic-1', class_id: 'class-2', title: 'Hardware' }],
         error: null,
       }),
     };
     requireSupabase.mockReturnValue({
-      from: jest.fn(table => table === 'class_memberships' ? membershipQuery : topicQuery),
+      from: vi.fn(table => table === 'class_memberships' ? membershipQuery : topicQuery),
     });
 
     await expect(listStudentPublishedTopics()).resolves.toEqual([
@@ -38,7 +38,7 @@ describe('studentTopicService', () => {
   });
 
   test('submete somente respostas, deixando o gabarito no servidor', async () => {
-    const rpc = jest.fn().mockResolvedValue({
+    const rpc = vi.fn().mockResolvedValue({
       data: { score: 1, total: 1, percentage: 100 },
       error: null,
     });

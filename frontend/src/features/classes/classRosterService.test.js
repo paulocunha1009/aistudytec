@@ -8,24 +8,24 @@ import {
 } from './classRosterService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({
-  requireSupabase: jest.fn(),
+vi.mock('../../lib/supabase', () => ({
+  requireSupabase: vi.fn(),
 }));
 
 describe('classRosterService', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   test('lista apenas matrículas ativas da turma', async () => {
     const query = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      is: jest.fn().mockReturnThis(),
-      order: jest.fn().mockResolvedValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
         data: [{ joined_at: '2026-07-23T00:00:00Z', profiles: { id: 'student-1', name: 'Aluno' } }],
         error: null,
       }),
     };
-    requireSupabase.mockReturnValue({ from: jest.fn(() => query) });
+    requireSupabase.mockReturnValue({ from: vi.fn(() => query) });
 
     await expect(listClassStudents('class-1')).resolves.toEqual([{
       id: 'student-1',
@@ -37,7 +37,7 @@ describe('classRosterService', () => {
   });
 
   test('normaliza e-mail antes da matrícula', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: [{ id: 'student-1' }], error: null });
+    const rpc = vi.fn().mockResolvedValue({ data: [{ id: 'student-1' }], error: null });
     requireSupabase.mockReturnValue({ rpc });
 
     await enrollStudent({ classId: 'class-1', email: '  ALUNO@EXEMPLO.COM  ' });
@@ -49,7 +49,7 @@ describe('classRosterService', () => {
   });
 
   test('remove matrícula por função protegida', async () => {
-    const rpc = jest.fn().mockResolvedValue({ error: null });
+    const rpc = vi.fn().mockResolvedValue({ error: null });
     requireSupabase.mockReturnValue({ rpc });
 
     await removeStudent({ classId: 'class-1', studentId: 'student-1' });
@@ -61,7 +61,7 @@ describe('classRosterService', () => {
   });
 
   test('professor autoriza ou matricula aluno sem escolher papel', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: { status: 'authorized' }, error: null });
+    const rpc = vi.fn().mockResolvedValue({ data: { status: 'authorized' }, error: null });
     requireSupabase.mockReturnValue({ rpc });
 
     await expect(authorizeOrEnrollStudent({
@@ -79,11 +79,11 @@ describe('classRosterService', () => {
 
   test('lista somente autorizações pendentes de aluno da turma', async () => {
     const query = {
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockResolvedValue({ data: [{ id: 'grant-1' }], error: null }),
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: [{ id: 'grant-1' }], error: null }),
     };
-    requireSupabase.mockReturnValue({ from: jest.fn(() => query) });
+    requireSupabase.mockReturnValue({ from: vi.fn(() => query) });
     await expect(listPendingStudentGrants('class-1')).resolves.toEqual([{ id: 'grant-1' }]);
     expect(query.eq).toHaveBeenCalledWith('class_id', 'class-1');
     expect(query.eq).toHaveBeenCalledWith('role', 'student');
@@ -91,7 +91,7 @@ describe('classRosterService', () => {
   });
 
   test('revoga autorização por RPC protegida', async () => {
-    const rpc = jest.fn().mockResolvedValue({ error: null });
+    const rpc = vi.fn().mockResolvedValue({ error: null });
     requireSupabase.mockReturnValue({ rpc });
     await revokePendingStudentGrant('grant-1');
     expect(rpc).toHaveBeenCalledWith('revoke_teacher_student_grant', {

@@ -9,19 +9,19 @@ import {
 } from './authService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({
-  requireSupabase: jest.fn(),
+vi.mock('../../lib/supabase', () => ({
+  requireSupabase: vi.fn(),
 }));
 
 const profileQuery = data => ({
-  select: jest.fn().mockReturnThis(),
-  eq: jest.fn().mockReturnThis(),
-  single: jest.fn().mockResolvedValue({ data, error: null }),
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  single: vi.fn().mockResolvedValue({ data, error: null }),
 });
 
 describe('authService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('traduz bloqueio OAuth de cadastro não autorizado', () => {
@@ -33,7 +33,7 @@ describe('authService', () => {
 
   test('carrega identidade pelo perfil protegido', async () => {
     const query = profileQuery({ id: 'user-1', role: 'teacher', status: 'active', name: 'Professora', email: 'p@test.invalid', grade_year: null });
-    requireSupabase.mockReturnValue({ from: jest.fn(() => query) });
+    requireSupabase.mockReturnValue({ from: vi.fn(() => query) });
 
     await expect(loadIdentity({ user: { id: 'user-1', email: 'p@test.invalid' } })).resolves.toMatchObject({
       id: 'user-1',
@@ -44,8 +44,8 @@ describe('authService', () => {
 
   test('login ativo usa Supabase e não depende do Flask', async () => {
     const query = profileQuery({ id: 'user-1', role: 'student', status: 'active', name: 'Ana', email: 'ana@test.invalid', grade_year: '1' });
-    const signInWithPassword = jest.fn().mockResolvedValue({ data: { session: { user: { id: 'user-1', email: 'ana@test.invalid' } } }, error: null });
-    requireSupabase.mockReturnValue({ auth: { signInWithPassword }, from: jest.fn(() => query) });
+    const signInWithPassword = vi.fn().mockResolvedValue({ data: { session: { user: { id: 'user-1', email: 'ana@test.invalid' } } }, error: null });
+    requireSupabase.mockReturnValue({ auth: { signInWithPassword }, from: vi.fn(() => query) });
 
     const result = await signIn({ email: ' ana@test.invalid ', password: 'segredo-seguro' });
 
@@ -55,13 +55,13 @@ describe('authService', () => {
 
   test('conta não ativa é desconectada localmente', async () => {
     const query = profileQuery({ id: 'user-1', role: 'student', status: 'invited', name: 'Ana', email: 'ana@test.invalid', grade_year: '1' });
-    const signOut = jest.fn().mockResolvedValue({ error: null });
+    const signOut = vi.fn().mockResolvedValue({ error: null });
     requireSupabase.mockReturnValue({
       auth: {
-        signInWithPassword: jest.fn().mockResolvedValue({ data: { session: { user: { id: 'user-1' } } }, error: null }),
+        signInWithPassword: vi.fn().mockResolvedValue({ data: { session: { user: { id: 'user-1' } } }, error: null }),
         signOut,
       },
-      from: jest.fn(() => query),
+      from: vi.fn(() => query),
     });
 
     await expect(signIn({ email: 'ana@test.invalid', password: 'segredo-seguro' })).rejects.toThrow('ainda não está ativa');
@@ -69,7 +69,7 @@ describe('authService', () => {
   });
 
   test('Google OAuth retorna à origem e exige seleção explícita da conta', async () => {
-    const signInWithOAuth = jest.fn().mockResolvedValue({ data: { provider: 'google' }, error: null });
+    const signInWithOAuth = vi.fn().mockResolvedValue({ data: { provider: 'google' }, error: null });
     requireSupabase.mockReturnValue({ auth: { signInWithOAuth } });
 
     await signInWithGoogle();
@@ -84,7 +84,7 @@ describe('authService', () => {
   });
 
   test('recuperação usa retorno na própria origem', async () => {
-    const resetPasswordForEmail = jest.fn().mockResolvedValue({ error: null });
+    const resetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
     requireSupabase.mockReturnValue({ auth: { resetPasswordForEmail } });
 
     await requestPasswordRecovery('ana@test.invalid');
@@ -98,8 +98,8 @@ describe('authService', () => {
     requireSupabase.mockReturnValue({
       auth: {
         mfa: {
-          getAuthenticatorAssuranceLevel: jest.fn().mockResolvedValue({ data: { currentLevel: 'aal1', nextLevel: 'aal2' }, error: null }),
-          listFactors: jest.fn().mockResolvedValue({ data: { totp: [{ id: 'factor-1', status: 'verified' }] }, error: null }),
+          getAuthenticatorAssuranceLevel: vi.fn().mockResolvedValue({ data: { currentLevel: 'aal1', nextLevel: 'aal2' }, error: null }),
+          listFactors: vi.fn().mockResolvedValue({ data: { totp: [{ id: 'factor-1', status: 'verified' }] }, error: null }),
         },
       },
     });
@@ -112,8 +112,8 @@ describe('authService', () => {
   });
 
   test('verificação TOTP cria desafio antes de validar', async () => {
-    const challenge = jest.fn().mockResolvedValue({ data: { id: 'challenge-1' }, error: null });
-    const verify = jest.fn().mockResolvedValue({ error: null });
+    const challenge = vi.fn().mockResolvedValue({ data: { id: 'challenge-1' }, error: null });
+    const verify = vi.fn().mockResolvedValue({ error: null });
     requireSupabase.mockReturnValue({ auth: { mfa: { challenge, verify } } });
 
     await verifyTotp({ factorId: 'factor-1', code: '123456' });

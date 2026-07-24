@@ -9,7 +9,7 @@ module.exports = defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'http://127.0.0.1:3000',
+    baseURL: process.env.E2E_BASE_URL || 'http://127.0.0.1:4173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -19,14 +19,9 @@ module.exports = defineConfig({
     { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
   ],
   webServer: process.env.E2E_BASE_URL ? undefined : {
-    command: 'npm start',
-    url: 'http://127.0.0.1:3000',
+    command: 'npm start -- --host 127.0.0.1 --port 4173',
+    url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    env: {
-      BROWSER: 'none',
-      HOST: '127.0.0.1',
-      PORT: '3000',
-    },
   },
 });

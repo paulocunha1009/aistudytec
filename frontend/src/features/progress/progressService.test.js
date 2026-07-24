@@ -1,16 +1,16 @@
 import { loadStudentProgress } from './progressService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({ requireSupabase: jest.fn() }));
+vi.mock('../../lib/supabase', () => ({ requireSupabase: vi.fn() }));
 
 const queryWith = result => {
   const query = {
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    lte: jest.fn().mockReturnThis(),
-    not: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
     then: (resolve, reject) => Promise.resolve(result).then(resolve, reject),
   };
   return query;
@@ -27,7 +27,7 @@ test('monta progresso somente com registros persistidos do próprio aluno', asyn
     error: null,
   });
   requireSupabase.mockReturnValue({
-    from: jest.fn(table => ({ skill_mastery: mastery, review_queue: reviews, quiz_attempts: attempts })[table]),
+    from: vi.fn(table => ({ skill_mastery: mastery, review_queue: reviews, quiz_attempts: attempts })[table]),
   });
 
   const result = await loadStudentProgress('student-1');

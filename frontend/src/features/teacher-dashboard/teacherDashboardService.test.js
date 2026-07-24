@@ -1,10 +1,10 @@
 import { loadClassLearningDashboard } from './teacherDashboardService';
 import { requireSupabase } from '../../lib/supabase';
 
-jest.mock('../../lib/supabase', () => ({ requireSupabase: jest.fn() }));
+vi.mock('../../lib/supabase', () => ({ requireSupabase: vi.fn() }));
 
 test('carrega painel agregado pelo contrato protegido do banco', async () => {
-  const rpc = jest.fn().mockResolvedValue({
+  const rpc = vi.fn().mockResolvedValue({
     data: { summary: { students: 2 }, students: [], descriptors: [] },
     error: null,
   });

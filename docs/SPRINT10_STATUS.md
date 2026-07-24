@@ -470,3 +470,28 @@ constitui evidência de eficácia pedagógica.
 - validar correção, feedback, habilidades e atualização de progresso;
 - homologar o painel docente após a tentativa;
 - concluir o checklist responsivo e operacional do piloto.
+
+## Incremento 19 — tentativa real e intervenção docente
+
+- o aluno real concluiu o quiz publicado sem respostas produzidas pela equipe;
+- a nova tentativa registrou `5/9` respostas corretas e resultado de `56%`;
+- a jornada passou a exibir duas tentativas verificáveis;
+- cinco habilidades permaneceram consistentes com evidência acumulada de 100%;
+- quatro habilidades ficaram em prática com `50%` em duas respostas:
+  identificação de componentes, compreensão de função, comparação e
+  identificação e definição de conceitos;
+- o plano diário recomendou continuar no material com base no último quiz;
+- o painel docente recebeu a tentativa sem atualização manual;
+- a fila priorizada classificou o aluno para `Reforço` em quatro habilidades;
+- a ação sugerida foi revisar a explicação e observar a próxima tentativa;
+- a média descritiva das duas tentativas ficou em `78%`;
+- a leitura por descritor apresentou `D11 = 50%`, `D03 = 83%` e `D01 = 100%`;
+- o painel preservou os limites pedagógicos declarados: os indicadores
+  organizam evidências, mas não diagnosticam capacidade, esforço ou causa.
+
+## Próximo incremento
+
+- executar a intervenção docente sobre as quatro habilidades priorizadas;
+- realizar uma nova tentativa após o reforço e comparar a evolução;
+- validar responsividade nos dispositivos-alvo;
+- concluir o checklist operacional do piloto controlado.

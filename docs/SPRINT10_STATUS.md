@@ -261,6 +261,25 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 
 ## Próximo incremento
 
-- homologar a jornada estudante → material publicado → quiz → plano → painel docente;
-- adicionar atualização controlada do painel após novas evidências;
 - preparar os testes E2E autenticados do fluxo completo.
+
+## Incremento 11 — homologação E2E autenticada
+
+- jornada real executada do material publicado até o painel docente;
+- aluno autorizado concluiu as nove questões do tópico piloto;
+- correção server-side registrou 9/9 sem expor o gabarito;
+- nove habilidades receberam uma evidência cada;
+- D01, D03 e D11 receberam três respostas corretas cada;
+- painel removeu corretamente o sinal `sem tentativa`;
+- painel apresentou `Pouca evidência`, pois uma resposta por habilidade não sustenta domínio consolidado;
+- nenhuma revisão foi agendada porque o domínio acumulado observado ficou acima de 70%;
+- botão `Atualizar evidências` permite sincronização manual sem recarregar a aplicação;
+- horário da última atualização fica explícito ao professor;
+- evidência detalhada registrada em `docs/E2E_PILOT_2026-07-23.md`;
+- resultado não é apresentado como prova de eficácia pedagógica.
+
+## Próximo incremento
+
+- automatizar cenários E2E isolados sem contaminar dados acadêmicos reais;
+- revisar a experiência móvel e os estados de erro do fluxo autenticado;
+- preparar o corte de release para Vercel.

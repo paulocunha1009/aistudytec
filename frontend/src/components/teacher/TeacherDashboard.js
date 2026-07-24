@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, ArrowRight, BarChart3, Clock3, SearchCheck, Target, Users } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, Clock3, RefreshCw, SearchCheck, Target, Users } from 'lucide-react';
 import { Badge, Button, Card, EmptyState, ErrorState, Progress, Skeleton } from '../../design-system';
 import { buildInterventions, INTERVENTION_META } from '../../features/teacher-dashboard/interventionModel';
 import { loadClassLearningDashboard } from '../../features/teacher-dashboard/teacherDashboardService';
@@ -9,11 +9,18 @@ const formatDate = value => value ? new Date(value).toLocaleDateString('pt-BR') 
 const TeacherDashboard = ({ classId, onSelectTopic }) => {
   const [data, setData] = useState(null);
   const [loadState, setLoadState] = useState('idle');
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
 
   const load = () => {
     if (!classId) { setData(null); setLoadState('idle'); return; }
-    setLoadState('loading');
-    loadClassLearningDashboard(classId).then(result => { setData(result); setLoadState('ready'); }).catch(() => setLoadState('error'));
+    if (data) setRefreshing(true);
+    else setLoadState('loading');
+    loadClassLearningDashboard(classId).then(result => {
+      setData(result);
+      setLastUpdatedAt(new Date());
+      setLoadState('ready');
+    }).catch(() => setLoadState('error')).finally(() => setRefreshing(false));
   };
 
   useEffect(() => { load(); }, [classId]);
@@ -26,7 +33,7 @@ const TeacherDashboard = ({ classId, onSelectTopic }) => {
 
   return (
     <div className="space-y-8">
-      <header className="relative overflow-hidden rounded-[2rem] bg-[#07111f] p-6 text-white sm:p-8"><div className="home-grid pointer-events-none absolute inset-0 opacity-30" /><div className="relative"><p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Decisão apoiada por evidência</p><h2 className="mt-2 text-3xl font-black">Intervenções da turma</h2><p className="mt-2 max-w-2xl text-sm text-slate-300">A fila organiza sinais objetivos; a decisão pedagógica continua sendo do professor.</p><div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4"><div className="rounded-2xl bg-white/[0.07] p-3"><strong className="block text-2xl text-white">{data.summary.students}</strong><span className="text-xs text-slate-400">estudantes</span></div><div className="rounded-2xl bg-white/[0.07] p-3"><strong className="block text-2xl text-rose-300">{data.summary.dueReviews}</strong><span className="text-xs text-slate-400">revisões vencidas</span></div><div className="rounded-2xl bg-white/[0.07] p-3"><strong className="block text-2xl text-amber-300">{data.summary.skillsToReinforce}</strong><span className="text-xs text-slate-400">habilidades &lt;70%</span></div><div className="rounded-2xl bg-white/[0.07] p-3"><strong className="block text-2xl text-cyan-300">{data.summary.withoutAttempts}</strong><span className="text-xs text-slate-400">sem tentativa</span></div></div></div></header>
+      <header className="relative overflow-hidden rounded-[2rem] bg-[#07111f] p-6 text-white sm:p-8"><div className="home-grid pointer-events-none absolute inset-0 opacity-30" /><div className="relative"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div><p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Decisão apoiada por evidência</p><h2 className="mt-2 text-3xl font-black">Intervenções da turma</h2><p className="mt-2 max-w-2xl text-sm text-slate-300">A fila organiza sinais objetivos; a decisão pedagógica continua sendo do professor.</p></div><div className="shrink-0 text-right"><Button variant="secondary" size="sm" loading={refreshing} onClick={load}><RefreshCw size={15} /> Atualizar evidências</Button>{lastUpdatedAt && <p className="mt-2 text-xs text-slate-400">Atualizado às {lastUpdatedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>}</div></div><div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4"><div className="rounded-2xl bg-white/[0.07] p-3"><strong className="block text-2xl text-white">{data.summary.students}</strong><span className="text-xs text-slate-400">estudantes</span></div><div className="rounded-2xl bg-white/[0.07] p-3"><strong className="block text-2xl text-rose-300">{data.summary.dueReviews}</strong><span className="text-xs text-slate-400">revisões vencidas</span></div><div className="rounded-2xl bg-white/[0.07] p-3"><strong className="block text-2xl text-amber-300">{data.summary.skillsToReinforce}</strong><span className="text-xs text-slate-400">habilidades &lt;70%</span></div><div className="rounded-2xl bg-white/[0.07] p-3"><strong className="block text-2xl text-cyan-300">{data.summary.withoutAttempts}</strong><span className="text-xs text-slate-400">sem tentativa</span></div></div></div></header>
 
       <section aria-labelledby="interventions-title"><div className="mb-4"><p className="text-xs font-black uppercase tracking-[0.18em] text-violet-600">Fila priorizada</p><h3 id="interventions-title" className="mt-1 flex items-center gap-2 text-2xl font-black"><AlertTriangle className="text-violet-500" /> Onde olhar primeiro</h3></div>{interventions.length ? <div className="grid gap-4">{interventions.map(item => { const meta = INTERVENTION_META[item.type]; return <Card key={item.id} className="border-0 shadow-[0_12px_35px_rgba(15,23,42,.07)]"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><Badge tone={meta.tone}>{meta.label}</Badge><span className="font-black text-slate-900">{item.student.name}</span></div><h4 className="mt-3 text-lg font-black">{item.title}</h4><p className="mt-1 text-sm text-slate-600"><strong>Origem:</strong> {item.evidence}</p><p className="mt-2 text-sm text-blue-700"><strong>Ação possível:</strong> {meta.action}</p></div>{item.topicId && <Button size="sm" variant="secondary" className="shrink-0" onClick={() => onSelectTopic(item.topicId)}>Abrir tópico <ArrowRight size={16} /></Button>}</div></Card>; })}</div> : <EmptyState title="Nenhuma intervenção prioritária" description="Não existem revisões vencidas, ausência de tentativa ou habilidades com sinal suficiente para reforço." />}</section>
 

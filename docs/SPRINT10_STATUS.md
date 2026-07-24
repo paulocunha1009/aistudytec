@@ -415,3 +415,33 @@ constitui evidência de eficácia pedagógica.
 - validar vídeos, fontes, trilhas e questões;
 - publicar somente após aprovação explícita do professor;
 - repetir o fluxo do aluno no domínio oficial.
+
+## Incremento 17 — regeneração segura da curadoria audiovisual
+
+- a ação `Regerar vídeos` passou a regenerar somente a seção audiovisual, sem
+  substituir explicações, trilhas, fontes ou questões já revisadas;
+- vídeos previamente aprovados pelo professor são preservados;
+- somente candidatos ainda não aprovados são substituídos;
+- a troca ocorre no banco por função transacional `security definer`, com
+  validação do professor responsável e registro de auditoria
+  `topic.videos_regenerated`;
+- vídeos simples e técnicos permanecem limitados a 20 minutos;
+- a faixa avançada passou a aceitar aulas de até 45 minutos;
+- buscas avançadas priorizam português e canais institucionais brasileiros,
+  como universidades, institutos federais, CERT.br, NIC.br, ANPD e RNP;
+- vídeos avançados sem indicador institucional são rejeitados antes de chegar
+  à curadoria docente;
+- a regeneração foi homologada no tópico real e manteve intactas as aprovações
+  já existentes;
+- a consulta ampliada e processada em lotes encontrou candidatos incorporáveis
+  do CERT.br e NIC.br;
+- o professor aprovou `Ciclo de palestras Segurança da Internet — CERT.br:
+  Autenticação` para o nível avançado;
+- o vídeo avançado em inglês foi removido da curadoria aprovada;
+- os quatro critérios de revisão permanecem atendidos, mas o tópico não foi
+  publicado automaticamente.
+
+## Próximo incremento
+
+- publicar o material apenas mediante confirmação explícita;
+- homologar o consumo e o quiz pela conta real do aluno.

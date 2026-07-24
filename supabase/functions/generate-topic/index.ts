@@ -33,29 +33,56 @@ const tokens = (value: string) => new Set(
     ?.filter(token => token.length > 2 && !['para', 'como', 'uma', 'das', 'dos', 'que', 'curso', 'aula'].includes(token)) || [],
 );
 
-const youtubeVideos = async (apiKey: string | undefined, title: string) => {
+const institutionalChannel = (value: string) =>
+  /(universidade|instituto federal|uf[a-z]{2,}|if[a-z]{2,}|nic\.?br|cert\.?br|anpd|gov\.?br|senai|senac|fundação|fundacao|fiocruz|rnp|canal oficial)/i
+    .test(value || '');
+
+const youtubeVideos = async (apiKey: string | undefined, title: string, descriptorText = '') => {
   if (!apiKey) return [];
   const output: Record<string, unknown>[] = [];
-  const usedVideoIds = new Set<string>();
-  const topicTokens = tokens(title);
+  const topicTokens = tokens(`${title} ${descriptorText}`);
+  const queryFocus: Record<string, string[]> = {
+    simple: ['hardware componentes segurança digital explicação português'],
+    technical: ['arquitetura de computadores segurança da informação aula português'],
+    advanced: [
+      'segurança da informação LGPD universidade federal aula',
+      'segurança digital instituto federal aula',
+      'CERT.br segurança da informação',
+      'NIC.br segurança digital',
+    ],
+  };
   for (const level of levels) {
-    const query = encodeURIComponent(`${title} ${level === 'simple' ? 'explicação simples' : level === 'technical' ? 'aula completa' : 'aprofundado'} ensino médio`);
-    const search = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&part=snippet&type=video&safeSearch=strict&relevanceLanguage=pt&maxResults=8&q=${query}`).then(r => r.json());
-    const ids = (search.items || []).map((item: any) => item.id?.videoId).filter(Boolean);
+    const usedVideoIds = new Set<string>();
+    const searches = await Promise.all(queryFocus[level].map(async focus => {
+      const queryText = level === 'advanced' ? focus : `${title} ${focus}`;
+      const query = encodeURIComponent(queryText);
+      return fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&part=snippet&type=video&safeSearch=strict&relevanceLanguage=pt&regionCode=BR&videoEmbeddable=true&maxResults=20&q=${query}`).then(r => r.json());
+    }));
+    const ids = [...new Set(searches.flatMap(search =>
+      (search.items || []).map((item: any) => item.id?.videoId).filter(Boolean)
+    ))];
     if (!ids.length) continue;
-    const details = await fetch(`https://www.googleapis.com/youtube/v3/videos?key=${apiKey}&part=snippet,contentDetails,statistics&id=${ids.join(',')}`).then(r => r.json());
+    const idChunks = Array.from({ length: Math.ceil(ids.length / 50) }, (_, index) =>
+      ids.slice(index * 50, index * 50 + 50)
+    );
+    const detailResponses = await Promise.all(idChunks.map(chunk =>
+      fetch(`https://www.googleapis.com/youtube/v3/videos?key=${apiKey}&part=snippet,contentDetails,statistics&id=${chunk.join(',')}`).then(r => r.json())
+    ));
     const ranked = [];
-    for (const item of details.items || []) {
+    for (const item of detailResponses.flatMap(details => details.items || [])) {
       const duration = parseDuration(item.contentDetails?.duration);
-      if (duration < 180 || duration > 1200) continue;
+      const maxDuration = level === 'advanced' ? 2700 : 1200;
+      if (duration < 180 || duration > maxDuration) continue;
       if (usedVideoIds.has(item.id)) continue;
       const titleTokens = tokens(item.snippet.title);
       const overlap = [...topicTokens].filter(token => titleTokens.has(token)).length;
       if (overlap === 0) continue;
       const views = Number(item.statistics?.viewCount || 0);
       const searchPosition = Math.max(0, ids.indexOf(item.id));
+      const institutionBoost = institutionalChannel(item.snippet.channelTitle) ? 700 : 0;
+      if (level === 'advanced' && institutionBoost === 0) continue;
       const rankScore = overlap * 1000 + Math.log10(views + 1) * 45
-        - Math.abs(duration - 600) / 20 - searchPosition * 15;
+        + institutionBoost - Math.abs(duration - 600) / 20 - searchPosition * 15;
       ranked.push({
         level,
         youtubeVideoId: item.id,
@@ -97,7 +124,10 @@ Deno.serve(async req => {
     const { data: authData, error: authError } = await userClient.auth.getUser();
     if (authError || !authData.user) return json({ error: 'Sessão inválida' }, 401);
 
-    const { topicId } = await req.json();
+    const { topicId, part = 'all' } = await req.json();
+    if (!['all', 'explanations', 'questions', 'videos'].includes(part)) {
+      return json({ error: 'Parte de geração inválida' }, 400);
+    }
     const { data: topic, error: topicError } = await userClient.from('topics').select(`
       id, class_id, title, target_grade,
       topic_curriculum_descriptors(
@@ -113,6 +143,23 @@ Deno.serve(async req => {
     const descriptorText = descriptors.map((item: any) =>
       `${item.code}: ${item.description} | competência ${item.curriculum_competencies?.code}: ${item.curriculum_competencies?.description}`
     ).join('\n');
+
+    if (part === 'videos') {
+      const videos = await youtubeVideos(Deno.env.get('YOUTUBE_API_KEY'), topic.title, descriptorText);
+      if (!videos.length) throw new Error('Nenhum vídeo institucional incorporável foi encontrado');
+      const { data: insertedCount, error: replaceError } = await admin
+        .rpc('replace_topic_video_candidates', {
+          p_topic_id: topicId,
+          p_requested_by: authData.user.id,
+          p_videos: videos,
+        });
+      if (replaceError) throw replaceError;
+      return json({
+        status: 'generated',
+        part: 'videos',
+        videoCount: insertedCount || 0,
+      });
+    }
 
     const research = await geminiRequest(geminiKey, {
       contents: [{ parts: [{ text: `Pesquise evidências verificáveis para produzir material didático sobre "${topic.title}", alinhado aos descritores abaixo.\n${descriptorText}\nPriorize universidades, institutos federais, órgãos públicos, documentação técnica primária e jornalismo de grande prestígio. Não invente fatos, números ou referências. Produza uma síntese factual em português.` }] }],
@@ -156,7 +203,7 @@ Gere exatamente 9 questões com question, options (4 alternativas), correctOptio
       throw new Error('Gemini retornou descritor fora do tópico');
     }
 
-    const videos = await youtubeVideos(Deno.env.get('YOUTUBE_API_KEY'), topic.title);
+    const videos = await youtubeVideos(Deno.env.get('YOUTUBE_API_KEY'), topic.title, descriptorText);
     const { error: storeError } = await admin.rpc('store_generated_topic_content', {
       p_topic_id: topicId,
       p_payload: { ...content, sources, videos },
@@ -165,6 +212,11 @@ Gere exatamente 9 questões com question, options (4 alternativas), correctOptio
     return json({ status: 'generated', sourceCount: sources.length, videoCount: videos.length });
   } catch (error) {
     console.error(error);
-    return json({ error: error instanceof Error ? error.message : 'Falha na geração' }, 500);
+    const message = error instanceof Error
+      ? error.message
+      : (error && typeof error === 'object' && 'message' in error)
+        ? String(error.message)
+        : 'Falha na geração';
+    return json({ error: message }, 500);
   }
 });

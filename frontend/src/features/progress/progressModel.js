@@ -6,7 +6,7 @@ const parseBrazilianDate = (value) => {
   return new Date(year, month - 1, day, hour, minute).getTime();
 };
 
-export const buildProgressModel = ({ mastery = [], reviews = [], history = [] }) => {
+export const buildProgressModel = ({ mastery = [], reviews = [], history = [], interventions = [] }) => {
   const dueSkills = new Set(reviews.map(item => item.skill));
   const skills = mastery.map(item => {
     let stage = 'em-pratica';
@@ -20,7 +20,16 @@ export const buildProgressModel = ({ mastery = [], reviews = [], history = [] })
     .filter(item => item.type === 'quiz')
     .sort((a, b) => parseBrazilianDate(b.date) - parseBrazilianDate(a.date));
 
-  const plan = reviews.map(item => ({
+  const plan = interventions.map(item => ({
+    id: `intervention-${item.id}`,
+    kind: 'intervention',
+    title: item.title,
+    context: `${item.instructions} Habilidades: ${(item.skills || []).join(', ')}.`,
+    topicId: item.topic_available ? item.topic_id : null,
+    actionLabel: item.topic_available ? 'Fazer reforço' : 'Explorar outro material',
+  }));
+
+  plan.push(...reviews.map(item => ({
     id: `review-${item.id}`,
     kind: 'review',
     title: `Revisar ${item.skill}`,
@@ -28,7 +37,7 @@ export const buildProgressModel = ({ mastery = [], reviews = [], history = [] })
     dueDate: item.due_date,
     topicId: item.topic_available ? item.topic_id : null,
     actionLabel: item.topic_available ? 'Começar agora' : 'Explorar outro material',
-  }));
+  })));
 
   const latestAvailableAttempt = timeline.find(item => item.topic_available);
   if (plan.length === 0 && latestAvailableAttempt) {

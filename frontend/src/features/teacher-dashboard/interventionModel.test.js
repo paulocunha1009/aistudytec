@@ -15,3 +15,18 @@ test('separa ausência de tentativa de dificuldade acadêmica', () => {
   expect(items).toHaveLength(1);
   expect(items[0].type).toBe('no-attempt');
 });
+
+test('expõe as habilidades frágeis para a decisão explícita do professor', () => {
+  const items = buildInterventions([{
+    userId: '1',
+    name: 'Davi',
+    attempts: 2,
+    dueReviews: [],
+    skills: [
+      { skill: 'Componentes', masteryPct: 50, totalCount: 2, status: 'reforcar' },
+      { skill: 'Segurança', masteryPct: 100, totalCount: 2, status: 'mastered' },
+    ],
+  }]);
+
+  expect(items[0]).toMatchObject({ type: 'weak-skill', skills: ['Componentes'] });
+});

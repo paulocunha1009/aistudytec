@@ -8,6 +8,7 @@ const ProgressView = ({ currentUser, onOpenTopic, onExplore }) => {
   const [mastery, setMastery] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [history, setHistory] = useState([]);
+  const [interventions, setInterventions] = useState([]);
   const [loadState, setLoadState] = useState('loading');
   const [openingId, setOpeningId] = useState(null);
   const studentId = currentUser?.data?.id;
@@ -18,12 +19,13 @@ const ProgressView = ({ currentUser, onOpenTopic, onExplore }) => {
       setMastery(data.mastery);
       setReviews(data.reviews);
       setHistory(data.history);
+      setInterventions(data.interventions);
       setLoadState('ready');
     }).catch(() => setLoadState('error'));
   };
 
   useEffect(load, [studentId]);
-  const model = useMemo(() => buildProgressModel({ mastery, reviews, history }), [mastery, reviews, history]);
+  const model = useMemo(() => buildProgressModel({ mastery, reviews, history, interventions }), [mastery, reviews, history, interventions]);
 
   const openPlanItem = async (item) => {
     if (!item.topicId) { onExplore(); return; }

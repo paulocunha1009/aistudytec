@@ -35,6 +35,7 @@ export const buildInterventions = (students = []) => {
         student,
         title: `${repeatedWeak.length} habilidade${repeatedWeak.length > 1 ? 's' : ''} para reforçar`,
         evidence: repeatedWeak.map(skill => `${skill.skill} (${skill.masteryPct}%, ${skill.totalCount} respostas)`).join('; '),
+        skills: repeatedWeak.map(skill => skill.skill),
       });
     }
 

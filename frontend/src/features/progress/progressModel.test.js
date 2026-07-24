@@ -35,3 +35,31 @@ test('não oferece continuidade para material que deixou de estar publicado', ()
   expect(result.timeline).toHaveLength(1);
   expect(result.plan).toHaveLength(0);
 });
+
+test('prioriza a intervenção explícita do professor no plano diário', () => {
+  const result = buildProgressModel({
+    interventions: [{
+      id: 'i1',
+      title: 'Reforço orientado pelo professor',
+      instructions: 'Revise os componentes e registre suas dúvidas.',
+      skills: ['Identificação de componentes'],
+      topic_id: 't1',
+      topic_available: true,
+    }],
+    history: [{
+      id: 'a1',
+      type: 'quiz',
+      theme: 'Hardware',
+      percentage: 56,
+      date: '24/07/2026 00:38',
+      topic_available: true,
+      topic_id: 't1',
+    }],
+  });
+
+  expect(result.plan[0]).toMatchObject({
+    kind: 'intervention',
+    actionLabel: 'Fazer reforço',
+    topicId: 't1',
+  });
+});

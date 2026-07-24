@@ -26,15 +26,32 @@ test('monta progresso somente com registros persistidos do próprio aluno', asyn
     data: [{ id: 'a1', topic_id: 't1', score: 1, total: 2, percentage: 50, completed_at: '2026-07-23T10:00:00Z', topics: { title: 'Componentes', status: 'published' } }],
     error: null,
   });
+  const interventions = queryWith({
+    data: [{
+      id: 'i1',
+      topic_id: 't1',
+      title: 'Reforço orientado pelo professor',
+      instructions: 'Revise os componentes antes de tentar novamente.',
+      skills: ['Hardware'],
+      topics: { title: 'Componentes', status: 'published' },
+    }],
+    error: null,
+  });
   requireSupabase.mockReturnValue({
-    from: vi.fn(table => ({ skill_mastery: mastery, review_queue: reviews, quiz_attempts: attempts })[table]),
+    from: vi.fn(table => ({
+      skill_mastery: mastery,
+      review_queue: reviews,
+      quiz_attempts: attempts,
+      learning_interventions: interventions,
+    })[table]),
   });
 
   const result = await loadStudentProgress('student-1');
 
   expect(result.reviews[0]).toMatchObject({ topic_title: 'Componentes', topic_available: true, due_date: '2026-07-23' });
   expect(result.history[0]).toMatchObject({ type: 'quiz', theme: 'Componentes', topic_available: true, percentage: 50 });
-  [mastery, reviews, attempts].forEach(query => {
+  expect(result.interventions[0]).toMatchObject({ id: 'i1', topic_title: 'Componentes', topic_available: true });
+  [mastery, reviews, attempts, interventions].forEach(query => {
     expect(query.eq).toHaveBeenCalledWith('student_id', 'student-1');
   });
 });

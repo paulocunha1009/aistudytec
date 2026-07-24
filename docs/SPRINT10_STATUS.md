@@ -495,3 +495,35 @@ constitui evidência de eficácia pedagógica.
 - realizar uma nova tentativa após o reforço e comparar a evolução;
 - validar responsividade nos dispositivos-alvo;
 - concluir o checklist operacional do piloto controlado.
+
+## Incremento 20 — intervenção pedagógica persistente
+
+- o painel docente ganhou a ação `Criar reforço` para habilidades com evidência
+  repetida abaixo de 70%;
+- as habilidades frágeis detectadas são apresentadas ao professor antes do
+  envio;
+- o professor registra uma orientação própria, com limites de tamanho e
+  validação no frontend e no banco;
+- o banco confirma que o aluno pertence à turma e que cada habilidade possui
+  pelo menos duas respostas e domínio inferior a 70%;
+- a intervenção é vinculada ao material publicado mais recente que produziu a
+  evidência;
+- somente uma intervenção ativa por aluno e turma é mantida;
+- substituições preservam o histórico anterior como cancelado;
+- alunos acessam apenas suas próprias intervenções e docentes apenas as turmas
+  que podem administrar;
+- a intervenção aparece antes das revisões e tentativas no plano diário;
+- a orientação é concluída automaticamente quando o aluno entrega uma nova
+  tentativa do material indicado;
+- criação, aluno, turma, tópico e habilidades são registrados em auditoria;
+- doze suítes e 49 testes frontend foram aprovados;
+- o build de produção transformou 1.331 módulos com sucesso;
+- migração `20260724000300_teacher_learning_interventions.sql` aplicada ao
+  Supabase vinculado.
+
+## Próximo incremento
+
+- homologar visualmente o envio do reforço pelo professor;
+- confirmar a prioridade da orientação no plano do aluno;
+- realizar a tentativa pós-intervenção e comparar a evolução;
+- validar responsividade e concluir o checklist do piloto.

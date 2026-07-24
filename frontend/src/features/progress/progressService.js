@@ -7,10 +7,10 @@ const formatAttemptDate = value => new Intl.DateTimeFormat('pt-BR', {
 }).format(new Date(value)).replace(',', '');
 
 export const loadStudentProgress = async studentId => {
-  if (!studentId) return { mastery: [], reviews: [], history: [] };
+  if (!studentId) return { mastery: [], reviews: [], history: [], interventions: [] };
   const client = requireSupabase();
   const now = new Date().toISOString();
-  const [masteryResult, reviewResult, attemptResult] = await Promise.all([
+  const [masteryResult, reviewResult, attemptResult, interventionResult] = await Promise.all([
     client.from('skill_mastery')
       .select('id, skill, topic_id, correct_count, total_count, mastery_pct, last_practiced_at')
       .eq('student_id', studentId)
@@ -27,8 +27,13 @@ export const loadStudentProgress = async studentId => {
       .not('completed_at', 'is', null)
       .order('completed_at', { ascending: false })
       .limit(20),
+    client.from('learning_interventions')
+      .select('id, topic_id, title, instructions, skills, created_at, topics(title, status)')
+      .eq('student_id', studentId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false }),
   ]);
-  const error = [masteryResult, reviewResult, attemptResult].find(result => result.error)?.error;
+  const error = [masteryResult, reviewResult, attemptResult, interventionResult].find(result => result.error)?.error;
   if (error) throw new Error('Não foi possível carregar seu progresso.');
 
   return {
@@ -49,6 +54,11 @@ export const loadStudentProgress = async studentId => {
       total: item.total,
       percentage: item.percentage,
       date: formatAttemptDate(item.completed_at),
+    })),
+    interventions: (interventionResult.data || []).map(item => ({
+      ...item,
+      topic_title: item.topics?.title,
+      topic_available: item.topics?.status === 'published',
     })),
   };
 };

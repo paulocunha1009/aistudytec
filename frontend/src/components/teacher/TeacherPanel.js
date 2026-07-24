@@ -33,7 +33,7 @@ const TeacherPanel = ({ apiUrl, currentUser, addToast }) => {
             <TopicManager apiUrl={apiUrl} currentUser={currentUser} classId={classId} onSelectTopic={setTopicId} addToast={addToast} />
           )}
           {subTab === 'dashboard' && (
-            <TeacherDashboard apiUrl={apiUrl} classId={classId} onSelectTopic={setTopicId} />
+            <TeacherDashboard classId={classId} onSelectTopic={setTopicId} />
           )}
         </>
       )}

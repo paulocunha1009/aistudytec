@@ -230,6 +230,37 @@ O professor responsável pela turma agora pode matricular e remover alunos diret
 
 ## Próximo incremento
 
-- migrar os indicadores docentes de intervenção para tentativas, revisões e habilidades reais do Supabase;
-- agregar sinais por turma, aluno e descritor com isolamento RLS;
 - homologar visualmente a jornada completa usando uma conta real de aluno.
+
+## Incremento 10 — painel docente por evidências reais
+
+- dashboard docente deixou de consumir o endpoint legado `classDashboard`;
+- função `get_class_learning_dashboard` agrega os dados no PostgreSQL;
+- acesso exige professor proprietário da turma ou master com MFA `aal2`;
+- outro professor recebe bloqueio explícito e não acessa dados da turma;
+- resumo apresenta estudantes ativos, revisões vencidas, habilidades abaixo de 70% com evidência repetida e alunos sem tentativa;
+- fila de intervenção diferencia revisão vencida, ausência de atividade, reforço e pouca evidência;
+- cartões por aluno usam somente tentativas, domínio acumulado e última prática registrados;
+- nova seção curricular agrega acertos, respostas e estudantes com evidência por descritor;
+- porcentagens são identificadas como evidência observada e não como diagnóstico de capacidade ou esforço;
+- gabaritos permanecem fora do contrato do painel;
+- migração `20260723002000_class_learning_dashboard.sql` aplicada no staging;
+- lint remoto do schema aprovado sem erros;
+- doze suítes e 45 testes frontend aprovados;
+- teste pgTAP `012_class_learning_dashboard.test.sql` cobre agregação e isolamento entre professores;
+- build de produção aprovado.
+
+### Homologação visual real
+
+- turma: `Turma Piloto — Técnico em Informática`;
+- estudante ativo: `Phc Informática`;
+- painel exibiu um estudante e uma intervenção por ausência de tentativa;
+- revisões vencidas e habilidades abaixo de 70% permaneceram em zero;
+- descritores permaneceram no estado vazio porque ainda não existe quiz concluído pelo aluno;
+- nenhum dado acadêmico fictício foi criado para preencher o painel.
+
+## Próximo incremento
+
+- homologar a jornada estudante → material publicado → quiz → plano → painel docente;
+- adicionar atualização controlada do painel após novas evidências;
+- preparar os testes E2E autenticados do fluxo completo.

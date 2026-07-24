@@ -389,3 +389,29 @@ constitui evidência de eficácia pedagógica.
 - revisar e publicar um material real dessa turma;
 - homologar professor → publicação → aluno → quiz no domínio oficial;
 - concluir os testes responsivos e o checklist operacional da Sprint 15.
+
+## Incremento 16 — titularidade docente do piloto
+
+- transferência autorizada pelo Product Owner;
+- `Turma Piloto — Técnico em Informática` transferida da conta master para
+  `paulo.cunha1@prof.ce.gov.br`;
+- operação executada em transação única com validação do proprietário anterior;
+- destino validado como perfil `teacher` ativo antes da alteração;
+- um tópico docente teve sua titularidade alinhada à nova proprietária da turma;
+- uma matrícula ativa e todo o histórico acadêmico foram preservados;
+- evento `class.ownership_transferred` registrado em `audit_events`, incluindo
+  proprietário anterior, novo proprietário e motivo;
+- resultado verificado no banco: turma `756AD7FD`, um tópico alinhado e um aluno
+  ativo;
+- login real do professor confirmou a turma em `Minhas turmas`;
+- professor visualizou o aluno `Phc Informática` e o tópico real
+  `Fundamentos de hardware e segurança digital`;
+- o tópico permanece em `Gerado (revisar)`, portanto ainda não foi exposto ao
+  aluno como material publicado.
+
+## Próximo incremento
+
+- revisar o tópico real nos três níveis;
+- validar vídeos, fontes, trilhas e questões;
+- publicar somente após aprovação explícita do professor;
+- repetir o fluxo do aluno no domínio oficial.

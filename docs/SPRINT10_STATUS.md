@@ -520,10 +520,16 @@ constitui evidência de eficácia pedagógica.
 - o build de produção transformou 1.331 módulos com sucesso;
 - migração `20260724000300_teacher_learning_interventions.sql` aplicada ao
   Supabase vinculado.
+- frontend do commit `5aa5be0` publicado automaticamente pelo Vercel;
+- painel real do professor exibiu `Criar reforço` para as quatro habilidades
+  priorizadas;
+- orientação de reforço criada para `Phc Informática` sem erro;
+- conta real do aluno recebeu `Reforço orientado pelo professor` como primeiro
+  item do plano diário;
+- botão `Fazer reforço` abriu caminho para o mesmo material publicado;
+- texto, quatro habilidades e autoria pedagógica foram preservados na entrega.
 
 ## Próximo incremento
 
-- homologar visualmente o envio do reforço pelo professor;
-- confirmar a prioridade da orientação no plano do aluno;
 - realizar a tentativa pós-intervenção e comparar a evolução;
 - validar responsividade e concluir o checklist do piloto.

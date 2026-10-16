@@ -24,7 +24,7 @@ const contentSchema = (descriptorCodes: string[]) => {
     questions: {
       type: 'array', minItems: 9, maxItems: 9,
       items: object({
-        question: text, options: object({ A: text, B: text, C: text, D: text }),
+        question: text, options: { type: 'array', items: text, minItems: 4, maxItems: 4 },
         correctOption: { type: 'string', enum: ['A', 'B', 'C', 'D'] },
         explanation: text, skill: text,
         difficulty: { type: 'string', enum: ['facil', 'medio', 'dificil'] },
@@ -222,7 +222,7 @@ Estrutura:
 {"explanations":{"simple":"mínimo 500 caracteres","technical":"mínimo 700 caracteres","advanced":"mínimo 900 caracteres"},"learningPaths":{"simple":{},"technical":{},"advanced":{}},"questions":[]}
 
 Cada learningPath deve conter: hook (string), objectives (2-4 strings), keyIdeas (3-5 strings), realWorldConnection (string), guidedInvestigation {question, steps com 3 itens, searchTerms com 2-4 itens}, watchMission {before,during,after}, handsOnChallenge {title,instructions,deliverable}, reflectionQuestions (2-3 strings), discussionPrompt (string).
-Gere exatamente 9 questões com question, options (objeto com chaves A, B, C, D), correctOption (A-D), explanation (feedback detalhado), skill, difficulty (facil|medio|dificil) e descriptorCode. Cada descriptorCode deve ser EXATAMENTE um destes valores: ${JSON.stringify([...allowedCodes])}. Não use descrição, prefixo, código de competência ou códigos da pesquisa no campo descriptorCode. Distribua as questões entre os descritores. Não invente fontes, links ou estatísticas.` }] }],
+Gere exatamente 9 questões com question, options (lista de exatamente quatro textos, na ordem A, B, C, D), correctOption (A-D), explanation (feedback detalhado), skill, difficulty (facil|medio|dificil) e descriptorCode. Cada descriptorCode deve ser EXATAMENTE um destes valores: ${JSON.stringify([...allowedCodes])}. Não use descrição, prefixo, código de competência ou códigos da pesquisa no campo descriptorCode. Distribua as questões entre os descritores. Não invente fontes, links ou estatísticas.` }] }],
       generationConfig: {
         responseMimeType: 'application/json', responseJsonSchema: contentSchema([...allowedCodes]),
         temperature: 0.35, maxOutputTokens: 20000,

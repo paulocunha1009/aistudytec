@@ -5,6 +5,34 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 const levels = ['simple', 'technical', 'advanced'];
+const contentSchema = (descriptorCodes: string[]) => {
+  const text = { type: 'string' };
+  const texts = { type: 'array', items: text };
+  const object = (properties: Record<string, unknown>) => ({
+    type: 'object', properties, required: Object.keys(properties), additionalProperties: false,
+  });
+  const path = object({
+    hook: text, objectives: texts, keyIdeas: texts, realWorldConnection: text,
+    guidedInvestigation: object({ question: text, steps: texts, searchTerms: texts }),
+    watchMission: object({ before: text, during: text, after: text }),
+    handsOnChallenge: object({ title: text, instructions: text, deliverable: text }),
+    reflectionQuestions: texts, discussionPrompt: text,
+  });
+  return object({
+    explanations: object(Object.fromEntries(levels.map(level => [level, text]))),
+    learningPaths: object(Object.fromEntries(levels.map(level => [level, path]))),
+    questions: {
+      type: 'array', minItems: 9, maxItems: 9,
+      items: object({
+        question: text, options: object({ A: text, B: text, C: text, D: text }),
+        correctOption: { type: 'string', enum: ['A', 'B', 'C', 'D'] },
+        explanation: text, skill: text,
+        difficulty: { type: 'string', enum: ['facil', 'medio', 'dificil'] },
+        descriptorCode: { type: 'string', enum: descriptorCodes },
+      }),
+    },
+  });
+};
 const trustedSource = (domain: string) => /(^|\.)(gov\.br|edu\.br|usp\.br|unicamp\.br|ufsc\.br|ufrj\.br|ufmg\.br|rnp\.br|fiocruz\.br|ibm\.com|microsoft\.com|mozilla\.org|w3\.org|ieee\.org|acm\.org|nature\.com|science\.org|reuters\.com|bbc\.com|bbc\.co\.uk|apnews\.com|nytimes\.com|theguardian\.com|folha\.uol\.com\.br|estadao\.com\.br|oglobo\.globo\.com)$/.test(domain);
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
@@ -180,6 +208,8 @@ Deno.serve(async req => {
       throw new Error('Pesquisa não retornou ao menos duas fontes institucionais confiáveis');
     }
 
+    const allowedCodes = new Set<string>(descriptors.map((item: any) => item.code));
+    if (!allowedCodes.size) throw new Error('Tópico sem descritores para geração');
     const contentResponse = await geminiRequest(geminiKey, {
       contents: [{ parts: [{ text: `Você é especialista em educação profissional brasileira. Gere SOMENTE JSON válido para o tópico "${topic.title}", ano ${topic.target_grade}.
 Use exclusivamente a pesquisa fundamentada abaixo como base factual:
@@ -192,13 +222,15 @@ Estrutura:
 {"explanations":{"simple":"mínimo 500 caracteres","technical":"mínimo 700 caracteres","advanced":"mínimo 900 caracteres"},"learningPaths":{"simple":{},"technical":{},"advanced":{}},"questions":[]}
 
 Cada learningPath deve conter: hook (string), objectives (2-4 strings), keyIdeas (3-5 strings), realWorldConnection (string), guidedInvestigation {question, steps com 3 itens, searchTerms com 2-4 itens}, watchMission {before,during,after}, handsOnChallenge {title,instructions,deliverable}, reflectionQuestions (2-3 strings), discussionPrompt (string).
-Gere exatamente 9 questões com question, options (4 alternativas), correctOption (A-D), explanation (feedback detalhado), skill, difficulty (facil|medio|dificil) e descriptorCode. Cada descriptorCode deve ser um dos códigos fornecidos. Distribua as questões entre os descritores. Não invente fontes, links ou estatísticas.` }] }],
-      generationConfig: { responseMimeType: 'application/json', temperature: 0.35, maxOutputTokens: 20000 },
+Gere exatamente 9 questões com question, options (objeto com chaves A, B, C, D), correctOption (A-D), explanation (feedback detalhado), skill, difficulty (facil|medio|dificil) e descriptorCode. Cada descriptorCode deve ser EXATAMENTE um destes valores: ${JSON.stringify([...allowedCodes])}. Não use descrição, prefixo, código de competência ou códigos da pesquisa no campo descriptorCode. Distribua as questões entre os descritores. Não invente fontes, links ou estatísticas.` }] }],
+      generationConfig: {
+        responseMimeType: 'application/json', responseJsonSchema: contentSchema([...allowedCodes]),
+        temperature: 0.35, maxOutputTokens: 20000,
+      },
     });
     const text = contentResponse.candidates?.[0]?.content?.parts?.[0]?.text;
     const content = JSON.parse(text);
     if (!content.questions || content.questions.length !== 9) throw new Error('Gemini retornou quantidade inválida de questões');
-    const allowedCodes = new Set(descriptors.map((item: any) => item.code));
     if (content.questions.some((item: any) => !allowedCodes.has(item.descriptorCode))) {
       throw new Error('Gemini retornou descritor fora do tópico');
     }
